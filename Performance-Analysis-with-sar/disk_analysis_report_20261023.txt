@@ -1,0 +1,14 @@
+Disk Performance Analysis Report
+Generated on: Fri Oct 23 04:56:29 UTC 2026
+==================================
+
+1. Disk Utilization Overview:
+04:48:47          DEV       tps     rkB/s     wkB/s     dkB/s   areq-sz    aqu-sz     await     %util
+Average:      nvme1n1      0.00      0.00      0.00      0.00      0.00      0.00      0.00      0.00
+Average:      nvme0n1     35.18     46.81   2882.98      0.00     83.28      0.13      3.60      3.02
+
+2. High Disk Utilization Periods (>70%):
+
+3. Disk Performance Summary:
+Average TPS: 16.6585
+Average Disk Utilization: 1.07462%

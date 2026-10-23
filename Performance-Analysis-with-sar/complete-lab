@@ -1,0 +1,567 @@
+Lab 7: Performance Analysis with sar
+Objectives
+By the end of this lab, students will be able to:
+
+Install and configure the sar (System Activity Reporter) tool for continuous system monitoring
+Set up automated data collection for historical performance analysis
+Analyze CPU utilization patterns and identify performance bottlenecks
+Examine memory usage trends and detect memory-related issues
+Monitor disk I/O performance and storage subsystem behavior
+Generate comprehensive performance reports from historical data and configure ongoing automated monitoring
+Prerequisites
+Before starting this lab, students should have:
+
+Basic understanding of Linux command-line interface
+Familiarity with system administration concepts
+Knowledge of CPU, memory, and disk fundamentals
+Understanding of performance monitoring principles
+Experience with text editors like vi or nano
+Basic scripting knowledge (bash) and familiarity with cron or systemd timers
+Install the required package before starting (choose the command matching your distribution):
+
+# RHEL/CentOS/Fedora
+sudo yum install -y sysstat
+
+# Ubuntu/Debian
+sudo apt update
+sudo apt install -y sysstat
+Lab Environment
+Al Nafi provides Linux-based cloud machines - simply click Start Lab to access your pre-configured environment. No need to build your own VM or install additional software.
+
+Your lab environment includes:
+
+CentOS/RHEL 8 or Ubuntu 20.04 LTS
+Pre-installed sysstat package (contains sar)
+Root access for system configuration
+Sample workload generators for testing
+Task 1: Set Up sar to Collect System Activity Data Over Time
+Subtask 1.1: Verify and Install sysstat Package
+First, ensure the sysstat package is installed and check the current version.
+
+# Check if sysstat is installed
+rpm -qa | grep sysstat
+
+# If not installed on RHEL/CentOS
+sudo yum install -y sysstat
+
+# For Ubuntu systems
+sudo apt update
+sudo apt install -y sysstat
+Verify the installation and check available tools:
+
+# Check sar version
+sar -V
+
+# List all sysstat utilities
+ls -la /usr/lib64/sa/ 2>/dev/null || ls -la /usr/lib/sysstat/
+Deliverable: sar -V prints a version string (for example sysstat version 12.x.x), confirming sar is installed and callable.
+
+Subtask 1.2: Configure Data Collection Service
+Enable and configure the sadc (System Activity Data Collector) service:
+
+# Enable sysstat service
+sudo systemctl enable sysstat
+sudo systemctl start sysstat
+
+# Check service status
+sudo systemctl status sysstat
+Configure the data collection interval by editing the cron job (RHEL/CentOS) or the systemd timer (Ubuntu):
+
+# RHEL/CentOS: view current cron configuration
+sudo cat /etc/cron.d/sysstat
+
+# Edit the configuration file
+sudo nano /etc/cron.d/sysstat
+Modify the file to collect data every 2 minutes (default is 10 minutes):
+
+# Activity reports every 2 minutes Monday to Sunday
+*/2 * * * * root /usr/lib64/sa/sa1 1 1
+
+# Daily summary at 23:53
+53 23 * * * root /usr/lib64/sa/sa2 -A
+Deliverable: After saving the file, sudo cat /etc/cron.d/sysstat shows the updated */2 * * * * schedule.
+
+Subtask 1.3: Verify Data Collection Setup
+Check that data collection is working properly:
+
+# Check if data files are being created
+ls -la /var/log/sa/
+
+# View current day's data file
+ls -la /var/log/sa/sa$(date +%d)
+
+# Force immediate data collection
+sudo /usr/lib64/sa/sa1 1 1
+
+# Verify data was collected
+sar -u 1 1
+Deliverable: sar -u 1 1 outputs a single CPU utilization sample with columns %user %nice %system %iowait %steal %idle, confirming the collector is functioning and writing to /var/log/sa/saXX.
+
+Subtask 1.4: Create Custom Collection Script
+Create a script for enhanced data collection during specific periods:
+
+sudo nano /usr/local/bin/enhanced_sar_collection.sh
+Add the following content:
+
+#!/bin/bash
+# Enhanced SAR Data Collection Script
+
+LOG_DIR="/var/log/sa"
+DATE=$(date +%Y%m%d)
+TIME=$(date +%H%M%S)
+
+echo "Starting enhanced data collection at $(date)"
+
+# CPU data every 30 seconds for 10 minutes
+sar -u 30 20 > ${LOG_DIR}/cpu_detailed_${DATE}_${TIME}.log &
+
+# Memory data every 30 seconds for 10 minutes
+sar -r 30 20 > ${LOG_DIR}/memory_detailed_${DATE}_${TIME}.log &
+
+# Disk I/O data every 30 seconds for 10 minutes
+sar -d 30 20 > ${LOG_DIR}/disk_detailed_${DATE}_${TIME}.log &
+
+# Network data every 30 seconds for 10 minutes
+sar -n DEV 30 20 > ${LOG_DIR}/network_detailed_${DATE}_${TIME}.log &
+
+echo "Enhanced collection started. Data will be saved to ${LOG_DIR}"
+Make the script executable and run it:
+
+sudo chmod +x /usr/local/bin/enhanced_sar_collection.sh
+sudo /usr/local/bin/enhanced_sar_collection.sh
+Task 1 Deliverable: Four new log files matching cpu_detailed_*, memory_detailed_*, disk_detailed_*, and network_detailed_* appear in /var/log/sa/ after roughly 10 minutes, each containing 20 timestamped samples.
+
+Task 2: Analyze CPU and Memory Performance from Historical Data
+Subtask 2.1: Generate Load and Collect Real-Time CPU Data
+Create a CPU stress script to produce meaningful data:
+
+nano cpu_stress_test.sh
+#!/bin/bash
+# CPU Stress Test Script
+
+echo "Starting CPU stress test..."
+
+cpu_load() {
+    local duration=$1
+    local cores=$2
+
+    for ((i=1; i<=cores; i++)); do
+        yes > /dev/null &
+    done
+
+    sleep "$duration"
+    killall yes
+}
+
+echo "Phase 1: Light CPU load"
+cpu_load 60 2
+
+sleep 15
+
+echo "Phase 2: Heavy CPU load"
+cpu_load 90 4
+
+echo "CPU stress test completed"
+chmod +x cpu_stress_test.sh
+./cpu_stress_test.sh &
+While it runs, collect data:
+
+# Real-time CPU utilization
+sar -u 5 20
+
+# Per-core breakdown
+sar -P ALL 5 10
+Deliverable: The sar -u 5 20 output shows %idle dropping noticeably (well below 50%) during Phase 2 compared to idle baseline, confirming the load generator is affecting the CPU counters.
+
+Subtask 2.2: Build a CPU Analysis Script
+nano analyze_cpu_performance.sh
+#!/bin/bash
+# CPU Performance Analysis Script
+
+DATA_FILE="/var/log/sa/sa$(date +%d)"
+REPORT_FILE="cpu_analysis_report_$(date +%Y%m%d).txt"
+
+echo "CPU Performance Analysis Report" > $REPORT_FILE
+echo "Generated on: $(date)" >> $REPORT_FILE
+echo "=================================" >> $REPORT_FILE
+
+echo -e "\n1. Overall CPU Utilization:" >> $REPORT_FILE
+sar -u -f $DATA_FILE | grep -E "(Average|%user|%system|%iowait|%idle)" >> $REPORT_FILE
+
+echo -e "\n2. Peak CPU Usage Periods (>80% utilization):" >> $REPORT_FILE
+sar -u -f $DATA_FILE | awk '$3 != "%user" && NF>7 && ($3+$5) > 80 {print $1, $2, "Total:", $3+$5"%"}' >> $REPORT_FILE
+
+echo -e "\n3. High I/O Wait Periods (>10%):" >> $REPORT_FILE
+sar -u -f $DATA_FILE | awk '$6 != "%iowait" && NF>7 && $6 > 10 {print $1, $2, "I/O Wait:", $6"%"}' >> $REPORT_FILE
+
+echo -e "\n4. CPU Efficiency Summary:" >> $REPORT_FILE
+sar -u -f $DATA_FILE | awk '
+BEGIN {total_samples=0; total_idle=0; total_user=0; total_system=0}
+$3 != "%user" && NF > 6 {
+    total_samples++;
+    total_idle+=$8;
+    total_user+=$3;
+    total_system+=$5
+}
+END {
+    if(total_samples > 0) {
+        avg_idle = total_idle/total_samples;
+        avg_user = total_user/total_samples;
+        avg_system = total_system/total_samples;
+        efficiency = 100 - avg_idle;
+        print "Average CPU Utilization:", efficiency"%";
+        print "User processes:", avg_user"%";
+        print "System processes:", avg_system"%";
+        print "Idle time:", avg_idle"%"
+    }
+}' >> $REPORT_FILE
+
+echo "CPU analysis complete. Report saved to: $REPORT_FILE"
+cat $REPORT_FILE
+chmod +x analyze_cpu_performance.sh
+./analyze_cpu_performance.sh
+Deliverable: cpu_analysis_report_YYYYMMDD.txt exists in the current directory and contains four populated sections with numeric percentages (not empty).
+
+Subtask 2.3: Generate Memory Load and Analyze Historical Memory Data
+nano memory_stress_test.sh
+#!/bin/bash
+# Memory Stress Test Script
+
+echo "Starting memory stress test..."
+
+for i in {1..5}; do
+    dd if=/dev/zero of=/tmp/memtest_$i bs=1M count=200 2>/dev/null &
+done
+
+sleep 90
+
+rm -f /tmp/memtest_*
+killall dd 2>/dev/null
+
+echo "Memory stress test completed"
+chmod +x memory_stress_test.sh
+./memory_stress_test.sh &
+Collect and analyze memory data:
+
+sar -r 5 20
+sar -S 5 10
+nano analyze_memory_performance.sh
+#!/bin/bash
+# Memory Performance Analysis Script
+
+DATA_FILE="/var/log/sa/sa$(date +%d)"
+REPORT_FILE="memory_analysis_report_$(date +%Y%m%d).txt"
+
+echo "Memory Performance Analysis Report" > $REPORT_FILE
+echo "Generated on: $(date)" >> $REPORT_FILE
+echo "===================================" >> $REPORT_FILE
+
+echo -e "\n1. Memory Utilization Overview:" >> $REPORT_FILE
+sar -r -f $DATA_FILE | grep -E "(Average|kbmemfree|kbmemused|%memused)" | tail -5 >> $REPORT_FILE
+
+echo -e "\n2. High Memory Usage Periods (>80%):" >> $REPORT_FILE
+sar -r -f $DATA_FILE | awk '$4 != "%memused" && NF>8 && $4 > 80 {print $1, $2, "Memory Used:", $4"%", "Available:", $6"KB"}' >> $REPORT_FILE
+
+echo -e "\n3. Memory Efficiency Summary:" >> $REPORT_FILE
+sar -r -f $DATA_FILE | awk '
+BEGIN {samples=0; total_used=0; total_free=0}
+$4 != "%memused" && NF > 8 {
+    samples++;
+    total_used += $4;
+    total_free += $2;
+}
+END {
+    if(samples > 0) {
+        avg_used = total_used/samples;
+        avg_free = total_free/samples;
+        print "Average Memory Usage:", avg_used"%";
+        print "Average Free Memory:", avg_free"KB";
+    }
+}' >> $REPORT_FILE
+
+echo "Memory analysis complete. Report saved to: $REPORT_FILE"
+cat $REPORT_FILE
+chmod +x analyze_memory_performance.sh
+./analyze_memory_performance.sh
+Task 2 Deliverable: Two report files (cpu_analysis_report_*.txt and memory_analysis_report_*.txt) each show a computed "Average" percentage and at least one flagged high-usage period corresponding to the stress-test windows.
+
+Task 3: Analyze Disk I/O and Generate a Consolidated Report
+Subtask 3.1: Generate Disk I/O Load and Collect Data
+nano disk_stress_test.sh
+#!/bin/bash
+# Disk I/O Stress Test Script
+
+TEST_DIR="/tmp/disk_test"
+mkdir -p $TEST_DIR
+
+echo "Starting disk I/O stress test..."
+
+dd if=/dev/zero of=${TEST_DIR}/seq_write_test bs=1M count=200 conv=fsync
+dd if=/dev/urandom of=${TEST_DIR}/random_test bs=4k count=5000 oflag=direct
+dd if=${TEST_DIR}/random_test of=/dev/null bs=4k iflag=direct
+
+rm -rf $TEST_DIR
+echo "Disk stress test completed"
+chmod +x disk_stress_test.sh
+./disk_stress_test.sh &
+Collect disk data while the stress runs:
+
+sar -d 5 20
+sar -b 5 10
+Deliverable: sar -d 5 20 displays non-zero tps and %util values for the device backing /tmp during the test, confirming I/O activity is captured.
+
+Subtask 3.2: Analyze Disk Data and Build the Master Report
+nano analyze_disk_performance.sh
+#!/bin/bash
+# Disk Performance Analysis Script
+
+DATA_FILE="/var/log/sa/sa$(date +%d)"
+REPORT_FILE="disk_analysis_report_$(date +%Y%m%d).txt"
+
+echo "Disk Performance Analysis Report" > $REPORT_FILE
+echo "Generated on: $(date)" >> $REPORT_FILE
+echo "==================================" >> $REPORT_FILE
+
+echo -e "\n1. Disk Utilization Overview:" >> $REPORT_FILE
+sar -d -f $DATA_FILE | grep -E "(Average|DEV|tps|%util)" | tail -10 >> $REPORT_FILE
+
+echo -e "\n2. High Disk Utilization Periods (>70%):" >> $REPORT_FILE
+sar -d -f $DATA_FILE | awk '$NF != "%util" && NF>9 && $NF > 70 {print $1, $2, "Device:", $3, "Utilization:", $NF"%", "TPS:", $4}' >> $REPORT_FILE
+
+echo -e "\n3. Disk Performance Summary:" >> $REPORT_FILE
+sar -d -f $DATA_FILE | awk '
+BEGIN {samples=0; total_tps=0; total_util=0}
+$4 != "tps" && NF > 9 {
+    samples++;
+    total_tps += $4;
+    total_util += $NF;
+}
+END {
+    if(samples > 0) {
+        avg_tps = total_tps/samples;
+        avg_util = total_util/samples;
+        print "Average TPS:", avg_tps;
+        print "Average Disk Utilization:", avg_util"%";
+    }
+}' >> $REPORT_FILE
+
+echo "Disk analysis complete. Report saved to: $REPORT_FILE"
+cat $REPORT_FILE
+chmod +x analyze_disk_performance.sh
+./analyze_disk_performance.sh
+Now build a consolidated master report combining CPU, memory, and disk findings:
+
+nano master_performance_analysis.sh
+#!/bin/bash
+# Master Performance Analysis Script
+
+DATA_FILE="/var/log/sa/sa$(date +%d)"
+REPORT_DIR="/tmp/performance_reports"
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+MASTER_REPORT="${REPORT_DIR}/master_performance_report_${TIMESTAMP}.txt"
+
+mkdir -p $REPORT_DIR
+
+{
+echo "System Performance Analysis Report"
+echo "Generated: $(date)"
+echo "Hostname: $(hostname)"
+echo "Kernel: $(uname -r)"
+echo "Uptime: $(uptime)"
+echo "===================================="
+
+echo ""
+echo "CPU Performance Summary"
+sar -u -f $DATA_FILE | awk '
+$3 != "%user" && NF > 6 {
+    samples++; total_idle+=$8; total_user+=$3; total_system+=$5;
+    util = 100-$8;
+    if(util > max_util) max_util = util;
+}
+END {
+    if(samples>0) {
+        avg_util = 100 - (total_idle/samples);
+        print "Average CPU Utilization: " avg_util "%";
+        print "Peak CPU Utilization: " max_util "%";
+        if (avg_util < 50) print "Status: GOOD";
+        else if (avg_util < 80) print "Status: MODERATE";
+        else print "Status: HIGH - Investigation needed";
+    }
+}'
+
+echo ""
+echo "Memory Performance Summary"
+sar -r -f $DATA_FILE | awk '
+$4 != "%memused" && NF > 8 {
+    samples++; total_used+=$4;
+    if($4 > max_used) max_used=$4;
+}
+END {
+    if(samples>0) {
+        avg_used = total_used/samples;
+        print "Average Memory Usage: " avg_used "%";
+        print "Peak Memory Usage: " max_used "%";
+        if (avg_used < 70) print "Status: GOOD";
+        else if (avg_used < 85) print "Status: MODERATE";
+        else print "Status: HIGH - Investigation needed";
+    }
+}'
+
+echo ""
+echo "Disk Performance Summary"
+sar -d -f $DATA_FILE | awk '
+$4 != "tps" && NF > 9 {
+    samples++; total_util+=$NF;
+    if($NF > max_util) max_util=$NF;
+}
+END {
+    if(samples>0) {
+        avg_util = total_util/samples;
+        print "Average Disk Utilization: " avg_util "%";
+        print "Peak Disk Utilization: " max_util "%";
+        if (avg_util < 50) print "Status: GOOD";
+        else if (avg_util < 80) print "Status: MODERATE";
+        else print "Status: HIGH - Investigation needed";
+    }
+}'
+
+echo ""
+echo "Performance Optimization Recommendations"
+echo "1. CPU: monitor top offenders with top/htop; consider affinity or scaling."
+echo "2. Memory: review memory-intensive processes; watch for swap growth."
+echo "3. Disk: consider faster storage or I/O scheduler tuning for high-util devices."
+echo "4. Establish baselines and enable ongoing automated monitoring (see Subtask 3.3)."
+} > $MASTER_REPORT
+
+echo "Master performance report generated: $MASTER_REPORT"
+cat $MASTER_REPORT
+chmod +x master_performance_analysis.sh
+./master_performance_analysis.sh
+Deliverable: /tmp/performance_reports/master_performance_report_*.txt exists and contains three status lines (CPU, Memory, Disk), each reading GOOD, MODERATE, or HIGH.
+
+Subtask 3.3: Create Automated Monitoring Setup
+To keep performance visibility ongoing beyond this lab session, create a monitoring script that runs the master analysis on a schedule and retains a rolling history of reports.
+
+sudo nano /usr/local/bin/automated_performance_monitor.sh
+Add the following content:
+
+#!/bin/bash
+# Automated Performance Monitoring Script
+# Runs the master performance analysis and prunes old reports.
+
+DATA_FILE="/var/log/sa/sa$(date +%d)"
+REPORT_DIR="/var/log/performance_reports"
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+REPORT_FILE="${REPORT_DIR}/perf_report_${TIMESTAMP}.txt"
+RETENTION_DAYS=14
+ALERT_LOG="${REPORT_DIR}/alerts.log"
+
+mkdir -p "$REPORT_DIR"
+
+{
+    echo "Automated Performance Report - $(date)"
+    echo "========================================"
+
+    echo ""
+    echo "CPU Summary:"
+    sar -u -f "$DATA_FILE" | awk '
+    $3 != "%user" && NF > 6 {
+        samples++; total_idle+=$8;
+    }
+    END {
+        if (samples > 0) {
+            avg_util = 100 - (total_idle/samples);
+            printf "Average CPU Utilization: %.2f%%\n", avg_util;
+            if (avg_util > 85) print "ALERT: CPU utilization exceeds 85%";
+        }
+    }'
+
+    echo ""
+    echo "Memory Summary:"
+    sar -r -f "$DATA_FILE" | awk '
+    $4 != "%memused" && NF > 8 {
+        samples++; total_used+=$4;
+    }
+    END {
+        if (samples > 0) {
+            avg_used = total_used/samples;
+            printf "Average Memory Usage: %.2f%%\n", avg_used;
+            if (avg_used > 90) print "ALERT: Memory usage exceeds 90%";
+        }
+    }'
+
+    echo ""
+    echo "Disk Summary:"
+    sar -d -f "$DATA_FILE" | awk '
+    $4 != "tps" && NF > 9 {
+        samples++; total_util+=$NF;
+    }
+    END {
+        if (samples > 0) {
+            avg_util = total_util/samples;
+            printf "Average Disk Utilization: %.2f%%\n", avg_util;
+            if (avg_util > 80) print "ALERT: Disk utilization exceeds 80%";
+        }
+    }'
+} > "$REPORT_FILE"
+
+# Collect any ALERT lines into a persistent alert log with a timestamp
+grep "ALERT" "$REPORT_FILE" | while read -r line; do
+    echo "$(date): $line" >> "$ALERT_LOG"
+done
+
+# Remove reports older than the retention period
+find "$REPORT_DIR" -name "perf_report_*.txt" -mtime +$RETENTION_DAYS -delete
+
+echo "Report written to $REPORT_FILE"
+Make the script executable:
+
+sudo chmod +x /usr/local/bin/automated_performance_monitor.sh
+Test it manually before scheduling:
+
+sudo /usr/local/bin/automated_performance_monitor.sh
+ls -la /var/log/performance_reports/
+Option A: Schedule with cron (simplest, works on both RHEL/CentOS and Ubuntu):
+
+sudo crontab -e
+Add the following line to run the monitor every 30 minutes:
+
+*/30 * * * * /usr/local/bin/automated_performance_monitor.sh
+Option B: Schedule with a systemd service and timer (preferred for systems that already manage services via systemd):
+
+sudo nano /etc/systemd/system/perf-monitor.service
+[Unit]
+Description=Automated Performance Monitoring Run
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/automated_performance_monitor.sh
+sudo nano /etc/systemd/system/perf-monitor.timer
+[Unit]
+Description=Run Automated Performance Monitor every 30 minutes
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=30min
+Unit=perf-monitor.service
+
+[Install]
+WantedBy=timers.target
+Enable and start the timer:
+
+sudo systemctl daemon-reload
+sudo systemctl enable --now perf-monitor.timer
+
+# Verify the timer is scheduled
+systemctl list-timers | grep perf-monitor
+Task 3 Deliverable: Either crontab -l (run as the scheduling user) shows the */30 * * * * entry, or systemctl list-timers lists perf-monitor.timer with a valid next-run time. After waiting for at least one scheduled run, /var/log/performance_reports/ contains a new perf_report_*.txt file, and if any threshold was exceeded, /var/log/performance_reports/alerts.log contains a corresponding timestamped ALERT line.
+
+Expected Outcomes
+A working sysstat/sar installation collecting historical data at 2-minute intervals, verifiable via files in /var/log/sa/
+Three analysis reports (CPU, memory, disk) plus one consolidated master report, each containing computed averages, peaks, and a GOOD/MODERATE/HIGH status classification
+A scheduled automated monitoring job (cron or systemd timer) that regularly produces new performance reports and logs threshold alerts without manual intervention
+Troubleshooting
+If sar -f /var/log/sa/saXX returns "Cannot open" or produces no output, investigate whether the sysstat service is actually running, whether the file exists for today's date, and whether your user has permission to read files under /var/log/sa/. What does systemctl status sysstat tell you, and does the timestamp of the data file match when you expect data collection to have occurred?
+If your analysis scripts produce empty or zero-value sections (for example, "Average CPU Utilization: 0%" with no peak periods flagged), check whether the awk field numbers used in the script actually match the columns in your system's sar output, since column positions can shift between sysstat versions or between CPU/disk/memory report types. Try running the raw sar command alone and counting the columns before assuming the stress test failed to generate load.
+Conclusion
+In this lab, students installed and configured sysstat's sar utility, verified continuous historical data collection, and built a series of bash scripts to analyze CPU, memory, and disk performance from that historical data. Students generated controlled CPU, memory, and disk workloads, correlated the resulting sar metrics with each workload phase, and produced a consolidated master performance report with clear status indicators. Finally, students implemented an ongoing automated monitoring solution, scheduled through either cron or a systemd timer, that periodically generates reports and logs threshold-based alerts. With this foundation, students are prepared to extend the monitoring scripts with alerting integrations such as email or messaging webhooks, tune collection intervals and retention policies for production environments, and use the historical sar archive to support long-term capacity planning decisions.

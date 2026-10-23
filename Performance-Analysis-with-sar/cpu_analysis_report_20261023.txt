@@ -1,0 +1,17 @@
+CPU Performance Analysis Report
+Generated on: Fri Oct 23 04:51:50 UTC 2026
+=================================
+
+1. Overall CPU Utilization:
+04:48:47        CPU     %user     %nice   %system   %iowait    %steal     %idle
+Average:        all      2.68      0.00      7.93      0.01      0.63     88.75
+
+2. Peak CPU Usage Periods (>80% utilization):
+
+3. High I/O Wait Periods (>10%):
+
+4. CPU Efficiency Summary:
+Average CPU Utilization: 43.5125%
+User processes: 3.775%
+System processes: 12.6725%
+Idle time: 56.4875%

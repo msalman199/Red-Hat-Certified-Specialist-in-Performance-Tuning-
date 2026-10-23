@@ -1,0 +1,17 @@
+PERFORMANCE BASELINE REPORT
+===========================
+
+This baseline measurement captures:
+1. System configuration details
+2. Idle performance characteristics
+3. Performance under synthetic load
+
+Use this baseline to:
+- Compare before/after optimization results
+- Identify performance degradation over time
+- Establish SLA thresholds
+
+Files in this baseline:
+- system_info.txt: Hardware and OS details
+- idle_performance.log: Performance without load
+- loaded_performance.log: Performance under test load

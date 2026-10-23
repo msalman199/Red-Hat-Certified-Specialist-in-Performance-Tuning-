@@ -1,0 +1,138 @@
+=== System Performance Baseline ===
+Generated: Fri Oct 23 03:44:46 UTC 2026
+
+=== System Information ===
+Linux ip-172-31-10-171.ec2.internal 5.14.0-654.el9.x86_64 #1 SMP PREEMPT_DYNAMIC Fri Dec 19 08:34:59 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux
+
+=== CPU Information ===
+Architecture:                            x86_64
+CPU op-mode(s):                          32-bit, 64-bit
+Address sizes:                           48 bits physical, 48 bits virtual
+Byte Order:                              Little Endian
+CPU(s):                                  4
+On-line CPU(s) list:                     0-3
+Vendor ID:                               AuthenticAMD
+Model name:                              AMD EPYC 7571
+CPU family:                              23
+Model:                                   1
+Thread(s) per core:                      2
+Core(s) per socket:                      2
+Socket(s):                               1
+Stepping:                                2
+BogoMIPS:                                4399.98
+Flags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm constant_tsc rep_good nopl nonstop_tsc cpuid extd_apicid tsc_known_freq pni pclmulqdq ssse3 fma cx16 sse4_1 sse4_2 movbe popcnt aes xsave avx f16c rdrand hypervisor lahf_lm cmp_legacy cr8_legacy abm sse4a misalignsse 3dnowprefetch topoext vmmcall fsgsbase bmi1 avx2 smep bmi2 rdseed adx smap clflushopt sha_ni xsaveopt xsavec xgetbv1 clzero xsaveerptr arat npt nrip_save
+Hypervisor vendor:                       KVM
+Virtualization type:                     full
+L1d cache:                               64 KiB (2 instances)
+L1i cache:                               128 KiB (2 instances)
+L2 cache:                                1 MiB (2 instances)
+L3 cache:                                8 MiB (1 instance)
+NUMA node(s):                            1
+NUMA node0 CPU(s):                       0-3
+Vulnerability Gather data sampling:      Not affected
+Vulnerability Indirect target selection: Not affected
+Vulnerability Itlb multihit:             Not affected
+Vulnerability L1tf:                      Not affected
+Vulnerability Mds:                       Not affected
+Vulnerability Meltdown:                  Not affected
+Vulnerability Mmio stale data:           Not affected
+Vulnerability Reg file data sampling:    Not affected
+Vulnerability Retbleed:                  Mitigation; untrained return thunk; SMT vulnerable
+Vulnerability Spec rstack overflow:      Vulnerable: Safe RET, no microcode
+Vulnerability Spec store bypass:         Vulnerable
+Vulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization
+Vulnerability Spectre v2:                Mitigation; Retpolines; STIBP disabled; RSB filling; PBRSB-eIBRS Not affected; BHI Not affected
+Vulnerability Srbds:                     Not affected
+Vulnerability Tsa:                       Not affected
+Vulnerability Tsx async abort:           Not affected
+Vulnerability Vmscape:                   Not affected
+
+=== Memory Information ===
+               total        used        free      shared  buff/cache   available
+Mem:            15Gi       2.0Gi        12Gi        19Mi       645Mi        13Gi
+Swap:             0B          0B          0B
+
+=== Disk Information ===
+Filesystem      Size  Used Avail Use% Mounted on
+devtmpfs        7.5G     0  7.5G   0% /dev
+tmpfs           7.7G     0  7.7G   0% /dev/shm
+tmpfs           3.1G   18M  3.1G   1% /run
+efivarfs        128K  4.1K  119K   4% /sys/firmware/efi/efivars
+/dev/nvme0n1p4   29G  8.3G   21G  29% /
+/dev/nvme0n1p3  966M  800M  100M  89% /boot
+/dev/nvme0n1p2  500M   11M  489M   3% /boot/efi
+tmpfs           1.6G   56K  1.6G   1% /run/user/42
+tmpfs           1.6G   36K  1.6G   1% /run/user/1001
+
+=== Network Interfaces ===
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: ens5: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 9001 qdisc mq state UP group default qlen 1000
+    link/ether 0a:ff:e0:d1:d6:7b brd ff:ff:ff:ff:ff:ff
+    altname enp0s5
+    inet 172.31.10.171/24 brd 172.31.10.255 scope global dynamic noprefixroute ens5
+       valid_lft 2724sec preferred_lft 2724sec
+    inet6 fe80::8ff:e0ff:fed1:d67b/64 scope link 
+       valid_lft forever preferred_lft forever
+
+=== vmstat Baseline (20 samples, 3 seconds apart) ===
+procs -----------memory---------- ---swap-- -----io---- -system-- ------cpu-----
+ r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st
+ 0  0      0 13505848   4568 656088    0    0   183  2375  230  226  4  2 88  6  0
+ 0  0      0 13515908   4568 656096    0    0     0     1  541  646  0  0 99  0  0
+ 0  0      0 13527632   4568 656096    0    0     0     0  408  594  0  0 99  0  0
+ 0  0      0 13529900   4568 656096    0    0     0     0  391  615  0  0 99  0  0
+ 0  0      0 13532672   4568 656096    0    0     0     0  429  644  0  0 99  0  0
+ 0  0      0 13534940   4568 656096    0    0     0     0  379  581  0  0 99  0  0
+ 0  0      0 13537712   4568 656096    0    0     0     4  340  504  0  0 99  0  0
+ 0  0      0 13540232   4568 656096    0    0     0     0  352  535  0  0 99  0  0
+ 0  0      0 13542248   4568 656096    0    0     0    16  456  623  0  1 99  0  0
+ 1  0      0 13549980   4568 656096    0    0     0     0  621  699  1  2 98  0  0
+ 0  0      0 13552752   4568 656096    0    0     0     4  392  596  0  0 99  0  0
+ 0  0      0 13555020   4568 656096    0    0     0     0  356  545  0  0 99  0  0
+ 0  0      0 13557036   4568 656096    0    0     0     3  411  591  0  0 99  0  0
+ 0  0      0 13559304   4568 656096    0    0     0     1  451  632  0  0 99  0  0
+ 0  0      0 13562076   4568 656096    0    0     0     0  382  555  0  0 99  0  0
+ 0  0      0 13564848   4568 656096    0    0     0     0  419  646  0  0 99  0  0
+ 0  0      0 13567872   4568 656096    0    0     0     0  362  566  0  0 99  0  0
+ 0  0      0 13568944   4568 656216    0    0    65     0  507  686  1  1 98  0  0
+ 0  0      0 13571464   4568 656216    0    0     0    68  344  530  1  0 99  0  0
+ 0  0      0 13573984   4568 656216    0    0     0     1  388  579  0  0 99  0  0
+
+=== vmstat Memory Statistics ===
+     15945148 K total memory
+      2020084 K used memory
+       885424 K active memory
+       118388 K inactive memory
+     13574068 K free memory
+         4568 K buffer memory
+       656216 K swap cache
+            0 K total swap
+            0 K used swap
+            0 K free swap
+        14419 non-nice user cpu ticks
+           16 nice user cpu ticks
+         5495 system cpu ticks
+       334877 idle cpu ticks
+        21474 IO-wait cpu ticks
+          689 IRQ cpu ticks
+          304 softirq cpu ticks
+          543 stolen cpu ticks
+       649590 pages paged in
+      8430532 pages paged out
+            0 pages swapped in
+            0 pages swapped out
+       841995 interrupts
+       837715 CPU context switches
+   1792726196 boot time
+         9614 forks
+
+=== vmstat Disk Statistics ===
+disk- ------------reads------------ ------------writes----------- -----IO------
+       total merged sectors      ms  total merged sectors      ms    cur    sec
+nvme0n1  18765    613 1292140   35591  34804    623 16861065 1008224      0     80
+nvme1n1    148      0    7040      94      0      0       0       0      0      0

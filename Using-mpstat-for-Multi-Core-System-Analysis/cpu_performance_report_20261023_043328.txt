@@ -1,0 +1,78 @@
+==========================================
+    CPU PERFORMANCE ANALYSIS REPORT
+==========================================
+Generated: Fri Oct 23 04:33:28 UTC 2026
+System: ip-172-31-10-182.ec2.internal
+Analyst: centos
+
+=== SYSTEM CONFIGURATION ===
+CPU Architecture:
+Architecture:                            x86_64
+CPU(s):                                  4
+On-line CPU(s) list:                     0-3
+Model name:                              AMD EPYC 7571
+Thread(s) per core:                      2
+Core(s) per socket:                      2
+Socket(s):                               1
+NUMA node0 CPU(s):                       0-3
+
+Memory Information:
+               total        used        free      shared  buff/cache   available
+Mem:            15Gi       1.0Gi        13Gi        27Mi       968Mi        14Gi
+Swap:             0B          0B          0B
+
+=== CURRENT PERFORMANCE METRICS ===
+System Load:
+ 04:33:28 up 9 min,  1 user,  load average: 0.41, 0.72, 0.42
+
+CPU Utilization (10-second average):
+Average:     CPU    %usr   %nice    %sys %iowait    %irq   %soft  %steal  %guest  %gnice   %idle
+Average:     all    0.38    0.00    0.23    0.00    0.05    0.05    0.08    0.00    0.00   99.22
+Average:       0    0.70    0.00    0.30    0.00    0.00    0.00    0.10    0.00    0.00   98.90
+Average:       1    0.20    0.00    0.10    0.00    0.00    0.10    0.10    0.00    0.00   99.50
+Average:       2    0.10    0.00    0.20    0.00    0.10    0.10    0.00    0.00    0.00   99.50
+Average:       3    0.50    0.00    0.30    0.00    0.10    0.00    0.10    0.00    0.00   99.00
+
+=== PERFORMANCE TEST RESULTS ===
+Running CPU stress test for analysis...
+Stress Test Results:
+Average:     CPU    %usr   %nice    %sys %iowait    %irq   %soft  %steal  %guest  %gnice   %idle
+Average:     all   37.42    0.00    0.21    0.00    0.29    0.03    0.03    0.00    0.00   62.02
+Average:       0   37.47    0.00    0.18    0.00    0.28    0.03    0.03    0.00    0.00   62.03
+Average:       1   37.47    0.00    0.25    0.00    0.30    0.00    0.03    0.00    0.00   61.96
+Average:       2   37.40    0.00    0.25    0.00    0.30    0.05    0.05    0.00    0.00   61.95
+Average:       3   37.35    0.00    0.18    0.00    0.27    0.05    0.03    0.00    0.00   62.12
+
+=== ANALYSIS AND RECOMMENDATIONS ===
+Performance Analysis:
+- Maximum CPU utilization during test: %
+- Minimum CPU utilization during test: %
+- Status: MODERATE CPU utilization
+- Recommendation: Normal operating range
+
+Load Balancing Analysis:
+- Number of CPU cores analyzed: 0
+
+=== MONITORING RECOMMENDATIONS ===
+1. Regular Monitoring:
+   - Use 'mpstat -P ALL 5' for real-time monitoring
+   - Set up automated alerts for >80% sustained CPU usage
+
+2. Performance Optimization:
+   - Consider process CPU affinity for critical applications
+   - Monitor I/O wait times if >20% consistently
+   - Review process scheduling priorities
+
+3. Capacity Planning:
+   - Current peak utilization: %
+   - Recommended threshold for scaling: 70%
+   - Consider additional cores if consistently above threshold
+
+=== APPENDIX: COMMAND REFERENCE ===
+Useful mpstat commands:
+- mpstat -P ALL          # Show all CPU statistics
+- mpstat -P ALL 5        # Monitor every 5 seconds
+- mpstat -P 0,1 2 10     # Monitor CPUs 0,1 for 20 seconds
+- mpstat -I SUM          # Show interrupt statistics
+
+Report generation completed: Fri Oct 23 04:34:18 UTC 2026

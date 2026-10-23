@@ -1,0 +1,60 @@
+PERFORMANCE TEST SUITE SUMMARY
+Generated: Fri Oct 23 02:31:08 UTC 2026
+Test Duration per Component: 60 seconds
+
+CPU TEST:
+CPU cores: 4
+CPU model: AMD EPYC 7571
+stress-ng: info:  [119427] setting to a 1 min run per stressor
+stress-ng: info:  [119427] dispatching hogs: 4 cpu
+stress-ng: info:  [119427] note: /proc/sys/kernel/sched_autogroup_enabled is 1 and this can impact scheduling throughput for processes not attached to a tty. Setting this to 0 may improve performance metrics
+stress-ng: metrc: [119427] stressor       bogo ops real time  usr time  sys time   bogo ops/s     bogo ops/s
+stress-ng: metrc: [119427]                           (secs)    (secs)    (secs)   (real time) (usr+sys time)
+stress-ng: metrc: [119427] cpu              191162     60.01    236.45      0.06      3185.71         808.24
+stress-ng: info:  [119427] skipped: 0
+stress-ng: info:  [119427] passed: 4: cpu (4)
+stress-ng: info:  [119427] failed: 0
+stress-ng: info:  [119427] metrics untrustworthy: 0
+stress-ng: info:  [119427] successful run completed in 1 min
+
+MEMORY TEST:
+               total        used        free      shared  buff/cache   available
+Mem:            15Gi       1.2Gi       9.0Gi        28Mi       5.3Gi        14Gi
+Swap:             0B          0B          0B
+Testing with 12457MB memory allocation
+stress-ng: info:  [119486] setting to a 1 min run per stressor
+stress-ng: info:  [119486] dispatching hogs: 2 vm
+stress-ng: info:  [119486] note: /proc/sys/kernel/sched_autogroup_enabled is 1 and this can impact scheduling throughput for processes not attached to a tty. Setting this to 0 may improve performance metrics
+stress-ng: info:  [119491] vm: using 6.08G per stressor instance (total 12.17G of 9.03G available memory)
+stress-ng: metrc: [119486] stressor       bogo ops real time  usr time  sys time   bogo ops/s     bogo ops/s
+stress-ng: metrc: [119486]                           (secs)    (secs)    (secs)   (real time) (usr+sys time)
+stress-ng: metrc: [119486] vm              3277756     62.15     89.15     21.21     52737.15       29701.04
+stress-ng: info:  [119486] skipped: 0
+stress-ng: info:  [119486] passed: 2: vm (2)
+stress-ng: info:  [119486] failed: 0
+stress-ng: info:  [119486] metrics untrustworthy: 0
+stress-ng: info:  [119486] successful run completed in 1 min, 4.04 secs
+
+DISK I/O TEST:
+Write test:
+1024+0 records in
+1024+0 records out
+1073741824 bytes (1.1 GB, 1.0 GiB) copied, 7.22516 s, 149 MB/s
+Read test:
+1024+0 records in
+1024+0 records out
+1073741824 bytes (1.1 GB, 1.0 GiB) copied, 8.13584 s, 132 MB/s
+stress-ng: info:  [119533] setting to a 1 min run per stressor
+stress-ng: info:  [119533] dispatching hogs: 2 hdd
+stress-ng: info:  [119533] note: /proc/sys/kernel/sched_autogroup_enabled is 1 and this can impact scheduling throughput for processes not attached to a tty. Setting this to 0 may improve performance metrics
+stress-ng: info:  [119538] hdd: using 512M file system space per stressor instance (total 1G of 18.43G available file system space)
+stress-ng: metrc: [119533] stressor       bogo ops real time  usr time  sys time   bogo ops/s     bogo ops/s
+stress-ng: metrc: [119533]                           (secs)    (secs)    (secs)   (real time) (usr+sys time)
+stress-ng: metrc: [119533] hdd             1604262     60.09     36.52     69.22     26697.55       15171.13
+stress-ng: info:  [119533] skipped: 0
+stress-ng: info:  [119533] passed: 2: hdd (2)
+stress-ng: info:  [119533] failed: 0
+stress-ng: info:  [119533] metrics untrustworthy: 0
+stress-ng: info:  [119533] successful run completed in 1 min
+
+END OF REPORT

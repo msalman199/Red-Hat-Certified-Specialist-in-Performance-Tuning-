@@ -1,0 +1,468 @@
+Lab 1: Introduction to Performance Tuning Concepts
+Objectives
+By the end of this lab, students will be able to:
+
+Understand the primary goals and principles of performance tuning in Linux systems
+Identify and analyze common resource bottlenecks (CPU, memory, disk, and network)
+Implement basic tuning strategies for CPU optimization
+Apply memory management techniques to improve system performance
+Configure disk I/O optimization settings and interpret performance metrics to make data-driven tuning decisions
+Prerequisites
+Before starting this lab, students should have:
+
+Basic Linux command-line knowledge
+Understanding of Linux file system structure
+Familiarity with text editors (vi/vim or nano)
+Basic knowledge of system processes and services
+Understanding of Linux user permissions and sudo access
+Required packages (install these before starting Task 1):
+
+# Update system packages
+sudo dnf update -y
+
+# Install performance monitoring and stress-testing tools
+sudo dnf install -y htop iotop sysstat perf stress-ng kernel-tools bc
+
+# Enable and start sysstat for historical performance data collection
+sudo systemctl enable sysstat
+sudo systemctl start sysstat
+Lab Environment: Al Nafi provides pre-configured, ready-to-use Linux cloud machines (CentOS/RHEL 8 or 9) with root access for this lab. Click Start Lab to launch your dedicated environment â�� no manual VM setup is required. Your environment includes network connectivity for package installation and sufficient resources to run the stress tests in this lab.
+
+Task 1: Establishing Baselines and Detecting Resource Bottlenecks
+Step 1.1: Define Performance Tuning Objectives
+Performance tuning is the systematic process of optimizing system resources to achieve better performance, efficiency, and user experience. The primary goals are:
+
+Maximize Throughput â�� increase work completed per unit of time
+Minimize Response Time â�� reduce the time between request and response
+Optimize Resource Utilization â�� efficiently use CPU, memory, disk, and network resources
+Improve Scalability â�� enable systems to handle increased load effectively
+Enhance User Experience â�� provide consistent, responsive system behavior
+Reduce Costs â�� optimize resource usage to minimize hardware and operational expense
+Key performance metrics you will use throughout this lab: CPU utilization, load average, memory usage/swap, disk I/O throughput and wait time, and process-level resource consumption.
+
+Step 1.2: Establish a Baseline Performance Report
+Create a baseline monitoring script:
+
+cat > ~/performance_baseline.sh << 'EOF'
+#!/bin/bash
+
+echo "=== SYSTEM PERFORMANCE BASELINE ==="
+echo "Date: $(date)"
+echo ""
+
+echo "=== CPU Information ==="
+lscpu | grep -E "Model name|CPU\(s\)|Thread|Core"
+echo ""
+
+echo "=== Memory Information ==="
+free -h
+echo ""
+
+echo "=== Disk Information ==="
+df -h
+echo ""
+
+echo "=== Current Load Average ==="
+uptime
+echo ""
+
+echo "=== Top 5 CPU Consuming Processes ==="
+ps aux --sort=-%cpu | head -6
+echo ""
+
+echo "=== Top 5 Memory Consuming Processes ==="
+ps aux --sort=-%mem | head -6
+echo ""
+EOF
+
+chmod +x ~/performance_baseline.sh
+~/performance_baseline.sh
+Deliverable: Run ~/performance_baseline.sh and capture the output. You should see six clearly labeled sections (CPU, Memory, Disk, Load Average, Top CPU processes, Top Memory processes) printed with real values from your lab machine, not errors.
+
+Step 1.3: Detect CPU, Memory, and Disk Bottlenecks
+Create three detection scripts and run each one.
+
+cat > ~/detect_cpu_bottleneck.sh << 'EOF'
+#!/bin/bash
+
+echo "=== CPU BOTTLENECK DETECTION ==="
+
+CPU_CORES=$(nproc)
+echo "System has $CPU_CORES CPU cores"
+
+LOAD_1MIN=$(uptime | awk -F'load average:' '{print $2}' | awk -F',' '{print $1}' | tr -d ' ')
+LOAD_5MIN=$(uptime | awk -F'load average:' '{print $2}' | awk -F',' '{print $2}' | tr -d ' ')
+
+echo "Current load average: 1min=$LOAD_1MIN, 5min=$LOAD_5MIN"
+
+if (( $(echo "$LOAD_1MIN > $CPU_CORES" | bc -l) )); then
+    echo "WARNING: CPU bottleneck detected! Load ($LOAD_1MIN) exceeds CPU cores ($CPU_CORES)"
+else
+    echo "CPU load is within normal range"
+fi
+
+echo ""
+echo "Top 5 CPU consuming processes:"
+ps aux --sort=-%cpu | head -6
+EOF
+
+chmod +x ~/detect_cpu_bottleneck.sh
+~/detect_cpu_bottleneck.sh
+cat > ~/detect_memory_bottleneck.sh << 'EOF'
+#!/bin/bash
+
+echo "=== MEMORY BOTTLENECK DETECTION ==="
+
+TOTAL_MEM=$(free -m | awk 'NR==2{print $2}')
+USED_MEM=$(free -m | awk 'NR==2{print $3}')
+AVAILABLE_MEM=$(free -m | awk 'NR==2{print $7}')
+SWAP_USED=$(free -m | awk 'NR==3{print $3}')
+
+MEM_USAGE_PERCENT=$((USED_MEM * 100 / TOTAL_MEM))
+
+echo "Total Memory: ${TOTAL_MEM}MB"
+echo "Used Memory: ${USED_MEM}MB (${MEM_USAGE_PERCENT}%)"
+echo "Available Memory: ${AVAILABLE_MEM}MB"
+echo "Swap Used: ${SWAP_USED}MB"
+
+if [ $MEM_USAGE_PERCENT -gt 90 ]; then
+    echo "CRITICAL: Memory bottleneck detected! Usage above 90%"
+elif [ $MEM_USAGE_PERCENT -gt 80 ]; then
+    echo "WARNING: High memory usage detected! Usage above 80%"
+else
+    echo "Memory usage is within normal range"
+fi
+
+if [ $SWAP_USED -gt 0 ]; then
+    echo "WARNING: System is using swap memory ($SWAP_USED MB)"
+fi
+
+echo ""
+echo "Top 5 memory consuming processes:"
+ps aux --sort=-%mem | head -6
+EOF
+
+chmod +x ~/detect_memory_bottleneck.sh
+~/detect_memory_bottleneck.sh
+cat > ~/detect_disk_bottleneck.sh << 'EOF'
+#!/bin/bash
+
+echo "=== DISK I/O BOTTLENECK DETECTION ==="
+
+echo "Disk Space Usage:"
+df -h | grep -E "^/dev"
+
+echo ""
+echo "Disk I/O Statistics (5-second average):"
+iostat -x 1 5 | tail -n +4
+
+IOWAIT=$(sar -u 1 1 | tail -1 | awk '{print $5}' | cut -d'.' -f1)
+echo ""
+echo "Current I/O Wait: ${IOWAIT}%"
+
+if [ "$IOWAIT" -gt 20 ]; then
+    echo "WARNING: High I/O wait detected! This may indicate disk bottleneck"
+elif [ "$IOWAIT" -gt 10 ]; then
+    echo "CAUTION: Moderate I/O wait detected"
+else
+    echo "I/O wait is within normal range"
+fi
+
+echo ""
+echo "Top I/O intensive processes:"
+sudo iotop -b -n 1 | head -10
+EOF
+
+chmod +x ~/detect_disk_bottleneck.sh
+~/detect_disk_bottleneck.sh
+Deliverable: All three scripts run without syntax errors and each prints a clear verdict line (WARNING, CRITICAL, or "within normal range"). On an idle lab machine you should see mostly "normal range" results â�� this confirms your detection logic and thresholds are working correctly before you introduce artificial load in Task 2.
+
+Task 2: Applying CPU and Memory Tuning Strategies
+Step 2.1: Configure the CPU Governor
+# Check current CPU governor
+cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 2>/dev/null || echo "cpufreq not exposed in this environment"
+
+# List available governors
+cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors 2>/dev/null || echo "N/A"
+
+# Check current CPU frequency information
+cpupower frequency-info 2>/dev/null || echo "cpupower not supported on this virtualized CPU"
+Note: Many cloud/VM instances do not expose cpufreq scaling controls to the guest OS. If the commands above report "not supported," record that observation â�� it is itself a valid diagnostic result â�� and continue with the script below, which handles this gracefully.
+
+cat > ~/set_cpu_governor.sh << 'EOF'
+#!/bin/bash
+
+echo "=== CPU GOVERNOR CONFIGURATION ==="
+
+if [ ! -d /sys/devices/system/cpu/cpu0/cpufreq ]; then
+    echo "cpufreq interface not available in this environment (common on virtualized/cloud CPUs)."
+    echo "Skipping governor change."
+    exit 0
+fi
+
+if [ -f /sys/class/power_supply/ADP1/online ]; then
+    POWER_SOURCE=$(cat /sys/class/power_supply/ADP1/online)
+    if [ "$POWER_SOURCE" -eq 1 ]; then
+        echo "AC Power detected - Setting performance governor"
+        sudo cpupower frequency-set -g performance
+    else
+        echo "Battery power detected - Setting powersave governor"
+        sudo cpupower frequency-set -g powersave
+    fi
+else
+    echo "Server/Desktop system - Setting performance governor"
+    sudo cpupower frequency-set -g performance
+fi
+
+echo "Current CPU governor:"
+cpupower frequency-info | grep "current policy" 2>/dev/null || echo "Unable to query policy on this system"
+EOF
+
+chmod +x ~/set_cpu_governor.sh
+~/set_cpu_governor.sh
+Deliverable: The script completes without a fatal error, either confirming the performance governor is active or clearly reporting that cpufreq is unavailable in the virtualized environment.
+
+Step 2.2: Process Priority and CPU Affinity Under Load
+# Start a CPU-intensive background process
+stress-ng --cpu 1 --timeout 120s &
+STRESS_PID=$!
+echo "Started stress-ng with PID $STRESS_PID"
+
+# Check current process priority
+ps -o pid,ni,comm -p $STRESS_PID
+
+# Reduce process priority (increase nice value = lower priority)
+sudo renice +10 -p $STRESS_PID
+
+# Verify priority change
+ps -o pid,ni,comm -p $STRESS_PID
+
+# Set CPU affinity to specific cores (adjust core list to match nproc output)
+sudo taskset -cp 0 $STRESS_PID
+
+# Verify CPU affinity
+taskset -cp $STRESS_PID
+
+# Clean up
+kill $STRESS_PID 2>/dev/null
+Deliverable: The second ps -o pid,ni,comm output shows the nice value changed from 0 to 10, and taskset -cp confirms the process affinity mask is restricted to CPU core 0. This demonstrates you can control both scheduling priority and core placement of a running process.
+
+Step 2.3: Tune Virtual Memory Parameters
+# Check current virtual memory settings
+sysctl vm.swappiness vm.dirty_ratio vm.dirty_background_ratio vm.vfs_cache_pressure
+
+# Create a persistent memory tuning configuration
+sudo tee /etc/sysctl.d/99-memory-tuning.conf << 'EOF'
+# Memory tuning parameters
+
+# Reduce swappiness (default is 60)
+vm.swappiness = 10
+
+# Dirty page ratios for better I/O performance
+vm.dirty_ratio = 15
+vm.dirty_background_ratio = 5
+
+# Cache pressure (default is 100); lower values preserve cache longer
+vm.vfs_cache_pressure = 50
+
+# Memory overcommit handling
+vm.overcommit_memory = 0
+vm.overcommit_ratio = 50
+EOF
+
+# Apply the settings
+sudo sysctl -p /etc/sysctl.d/99-memory-tuning.conf
+
+# Verify the changes took effect
+echo "Updated memory settings:"
+sysctl vm.swappiness vm.dirty_ratio vm.dirty_background_ratio vm.vfs_cache_pressure
+Deliverable: The final sysctl output shows vm.swappiness = 10, vm.dirty_ratio = 15, vm.dirty_background_ratio = 5, and vm.vfs_cache_pressure = 50 â�� confirming the new values are active and will persist across reboots via the file in /etc/sysctl.d/.
+
+Task 3: Disk I/O Tuning and Comprehensive Performance Testing
+Step 3.1: Optimize Disk Scheduler and Read-Ahead
+# Check current disk scheduler for each block device
+cat /sys/block/*/queue/scheduler 2>/dev/null
+
+cat > ~/optimize_disk.sh << 'EOF'
+#!/bin/bash
+
+echo "=== DISK I/O OPTIMIZATION ==="
+
+optimize_scheduler() {
+    local DISK=$1
+    local SCHEDULER=$2
+
+    if [ -f /sys/block/$DISK/queue/scheduler ]; then
+        AVAILABLE=$(cat /sys/block/$DISK/queue/scheduler)
+        echo "Available schedulers for $DISK: $AVAILABLE"
+
+        if [[ $AVAILABLE == *"$SCHEDULER"* ]]; then
+            echo "Setting $SCHEDULER scheduler for $DISK"
+            echo $SCHEDULER | sudo tee /sys/block/$DISK/queue/scheduler
+        else
+            echo "Scheduler $SCHEDULER not available for $DISK, leaving default"
+        fi
+
+        echo "Current scheduler for $DISK:"
+        cat /sys/block/$DISK/queue/scheduler
+    fi
+}
+
+DISKS=$(lsblk -d -n -o NAME | grep -E "^sd|^nvme|^vd")
+
+for DISK in $DISKS; do
+    echo "Optimizing disk: $DISK"
+
+    if [[ $DISK == nvme* ]]; then
+        optimize_scheduler $DISK "none"
+    else
+        optimize_scheduler $DISK "mq-deadline"
+    fi
+
+    if [ -f /sys/block/$DISK/queue/read_ahead_kb ]; then
+        echo "Setting read-ahead for $DISK to 128KB"
+        echo 128 | sudo tee /sys/block/$DISK/queue/read_ahead_kb
+    fi
+done
+
+echo ""
+echo "Disk optimization complete"
+EOF
+
+chmod +x ~/optimize_disk.sh
+~/optimize_disk.sh
+Deliverable: For each detected block device, the script prints the available schedulers, confirms which scheduler is now active, and confirms read_ahead_kb is set to 128. On some virtualized disks, the scheduler file may not exist â�� the script should report this gracefully rather than failing.
+
+Step 3.2: Build and Run the Comprehensive Performance Test Suite
+cat > ~/performance_test_suite.sh << 'EOF'
+#!/bin/bash
+
+TEST_DURATION=60
+RESULTS_DIR="$HOME/performance_results"
+TIMESTAMP=$(date '+%Y%m%d_%H%M%S')
+
+echo "=== COMPREHENSIVE PERFORMANCE TEST SUITE ==="
+echo "Test duration: $TEST_DURATION seconds"
+echo "Results directory: $RESULTS_DIR"
+
+mkdir -p $RESULTS_DIR
+
+test_cpu() {
+    echo "Running CPU performance test..."
+
+    echo "CPU cores: $(nproc)" > $RESULTS_DIR/cpu_test_$TIMESTAMP.log
+    echo "CPU model: $(lscpu | grep 'Model name' | cut -d':' -f2 | xargs)" >> $RESULTS_DIR/cpu_test_$TIMESTAMP.log
+
+    stress-ng --cpu $(nproc) --timeout ${TEST_DURATION}s --metrics-brief >> $RESULTS_DIR/cpu_test_$TIMESTAMP.log 2>&1 &
+    STRESS_PID=$!
+
+    for i in $(seq 1 $((TEST_DURATION/5))); do
+        echo "Sample $i: $(date)" >> $RESULTS_DIR/cpu_monitoring_$TIMESTAMP.log
+        sar -u 1 1 >> $RESULTS_DIR/cpu_monitoring_$TIMESTAMP.log
+        sleep 4
+    done
+
+    wait $STRESS_PID
+    echo "CPU test completed"
+}
+
+test_memory() {
+    echo "Running memory performance test..."
+
+    free -h > $RESULTS_DIR/memory_test_$TIMESTAMP.log
+
+    MEMORY_SIZE=$(free -m | awk 'NR==2{printf "%.0f", $2*0.8}')
+    echo "Testing with ${MEMORY_SIZE}MB memory allocation" >> $RESULTS_DIR/memory_test_$TIMESTAMP.log
+
+    stress-ng --vm 2 --vm-bytes ${MEMORY_SIZE}M --timeout ${TEST_DURATION}s --metrics-brief >> $RESULTS_DIR/memory_test_$TIMESTAMP.log 2>&1 &
+    STRESS_PID=$!
+
+    for i in $(seq 1 $((TEST_DURATION/5))); do
+        echo "Sample $i: $(date)" >> $RESULTS_DIR/memory_monitoring_$TIMESTAMP.log
+        free -h >> $RESULTS_DIR/memory_monitoring_$TIMESTAMP.log
+        sleep 4
+    done
+
+    wait $STRESS_PID
+    echo "Memory test completed"
+}
+
+test_disk_io() {
+    echo "Running disk I/O performance test..."
+
+    TEST_DIR="$HOME/disk_test"
+    mkdir -p $TEST_DIR
+
+    echo "Write test:" > $RESULTS_DIR/disk_test_$TIMESTAMP.log
+    dd if=/dev/zero of=$TEST_DIR/testfile bs=1M count=1024 oflag=direct 2>> $RESULTS_DIR/disk_test_$TIMESTAMP.log
+
+    echo "Read test:" >> $RESULTS_DIR/disk_test_$TIMESTAMP.log
+    dd if=$TEST_DIR/testfile of=/dev/null bs=1M iflag=direct 2>> $RESULTS_DIR/disk_test_$TIMESTAMP.log
+
+    stress-ng --hdd 2 --hdd-bytes 1G --temp-path $TEST_DIR --timeout ${TEST_DURATION}s --metrics-brief >> $RESULTS_DIR/disk_test_$TIMESTAMP.log 2>&1 &
+    STRESS_PID=$!
+
+    for i in $(seq 1 $((TEST_DURATION/5))); do
+        echo "Sample $i: $(date)" >> $RESULTS_DIR/disk_monitoring_$TIMESTAMP.log
+        iostat -x 1 1 >> $RESULTS_DIR/disk_monitoring_$TIMESTAMP.log
+        sleep 4
+    done
+
+    wait $STRESS_PID
+
+    rm -rf $TEST_DIR
+    echo "Disk I/O test completed"
+}
+
+echo "Starting performance test suite at $(date)"
+
+test_cpu
+echo ""
+test_memory
+echo ""
+test_disk_io
+
+echo ""
+echo "=== PERFORMANCE TEST SUMMARY ==="
+echo "All tests completed at $(date)"
+echo "Results saved in: $RESULTS_DIR"
+echo ""
+echo "Test files created:"
+ls -la $RESULTS_DIR/*$TIMESTAMP*
+
+# Generate summary report
+cat > $RESULTS_DIR/summary_report_$TIMESTAMP.txt << SUMMARY
+PERFORMANCE TEST SUITE SUMMARY
+Generated: $(date)
+Test Duration per Component: $TEST_DURATION seconds
+
+CPU TEST:
+$(cat $RESULTS_DIR/cpu_test_$TIMESTAMP.log 2>/dev/null)
+
+MEMORY TEST:
+$(cat $RESULTS_DIR/memory_test_$TIMESTAMP.log 2>/dev/null)
+
+DISK I/O TEST:
+$(cat $RESULTS_DIR/disk_test_$TIMESTAMP.log 2>/dev/null)
+
+END OF REPORT
+SUMMARY
+
+echo ""
+echo "Summary report generated: $RESULTS_DIR/summary_report_$TIMESTAMP.txt"
+cat $RESULTS_DIR/summary_report_$TIMESTAMP.txt
+EOF
+
+chmod +x ~/performance_test_suite.sh
+~/performance_test_suite.sh
+Deliverable: After the script finishes (approximately 3-4 minutes), the ~/performance_results/ directory contains eight or more timestamped log files (CPU, memory, disk, and monitoring logs for each) plus one summary_report_<timestamp>.txt file. The final terminal output should display the full contents of that summary report, showing CPU core count, memory allocation size used in the stress test, and the dd read/write throughput results.
+
+Expected Outcomes
+A complete set of reusable bash scripts for baselining, bottleneck detection, and tuning CPU, memory, and disk subsystems on a RHEL/CentOS system
+Hands-on evidence, in the form of generated log files and a summary report, that specific tuning parameters (nice value, CPU affinity, vm.swappiness, disk scheduler, read-ahead) were changed and verified
+A working comprehensive performance test suite that can be re-run at any time to compare system behavior before and after future tuning changes
+Troubleshooting
+If detect_cpu_bottleneck.sh or detect_memory_bottleneck.sh reports a false "WARNING" on an otherwise idle system, what other processes or scheduled jobs might be consuming resources in the background, and which command would you use to identify them?
+If ~/optimize_disk.sh reports that the scheduler file does not exist for your block device, what does that imply about the underlying storage (physical disk vs. virtualized/cloud block storage), and how would you confirm which storage backend your lab environment is actually using?
+Conclusion
+In this lab, you moved through the full performance tuning workflow: establishing a system baseline, building detection scripts to identify CPU, memory, and disk bottlenecks, applying concrete tuning changes such as CPU governor selection, process nice values, CPU affinity, virtual memory sysctl parameters, and disk scheduler/read-ahead settings, and finally validating all of it with a comprehensive, repeatable performance test suite that produces timestamped logs and a summary report. The key takeaway is that performance tuning is not a one-time action but an iterative measure-tune-verify cycle, where every change must be backed by before-and-after data rather than assumption. For system administrators, the best practice demonstrated here is to always baseline first, change one variable at a time, and keep automated, reusable tooling so that tuning decisions can be reproduced and audited later. As a next step, consider extending these scripts to monitor network I/O bottlenecks, integrating them with a persistent time-series monitoring stack such as Prometheus and Grafana, and exploring kernel-level tuning through tuned profiles for workload-specific optimization. For further study, consult the Red Hat Performance Tuning Guide, the man pages for sysctl, tune2fs, and iostat, and the official stress-ng documentation for advanced workload simulation options.

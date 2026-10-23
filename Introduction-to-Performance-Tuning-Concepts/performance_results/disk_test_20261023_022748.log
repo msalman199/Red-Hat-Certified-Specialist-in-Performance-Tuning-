@@ -1,0 +1,20 @@
+Write test:
+1024+0 records in
+1024+0 records out
+1073741824 bytes (1.1 GB, 1.0 GiB) copied, 7.22516 s, 149 MB/s
+Read test:
+1024+0 records in
+1024+0 records out
+1073741824 bytes (1.1 GB, 1.0 GiB) copied, 8.13584 s, 132 MB/s
+stress-ng: info:  [119533] setting to a 1 min run per stressor
+stress-ng: info:  [119533] dispatching hogs: 2 hdd
+stress-ng: info:  [119533] note: /proc/sys/kernel/sched_autogroup_enabled is 1 and this can impact scheduling throughput for processes not attached to a tty. Setting this to 0 may improve performance metrics
+stress-ng: info:  [119538] hdd: using 512M file system space per stressor instance (total 1G of 18.43G available file system space)
+stress-ng: metrc: [119533] stressor       bogo ops real time  usr time  sys time   bogo ops/s     bogo ops/s
+stress-ng: metrc: [119533]                           (secs)    (secs)    (secs)   (real time) (usr+sys time)
+stress-ng: metrc: [119533] hdd             1604262     60.09     36.52     69.22     26697.55       15171.13
+stress-ng: info:  [119533] skipped: 0
+stress-ng: info:  [119533] passed: 2: hdd (2)
+stress-ng: info:  [119533] failed: 0
+stress-ng: info:  [119533] metrics untrustworthy: 0
+stress-ng: info:  [119533] successful run completed in 1 min

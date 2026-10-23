@@ -1,0 +1,72 @@
+Sample 1: Fri Oct 23 02:27:48 UTC 2026
+Linux 5.14.0-654.el9.x86_64 (ip-172-31-10-12.ec2.internal) 	10/23/26 	_x86_64_	(4 CPU)
+
+02:27:48        CPU     %user     %nice   %system   %iowait    %steal     %idle
+02:27:49        all     96.75      0.00      2.00      0.00      0.00      1.25
+Average:        all     96.75      0.00      2.00      0.00      0.00      1.25
+Sample 2: Fri Oct 23 02:27:53 UTC 2026
+Linux 5.14.0-654.el9.x86_64 (ip-172-31-10-12.ec2.internal) 	10/23/26 	_x86_64_	(4 CPU)
+
+02:27:53        CPU     %user     %nice   %system   %iowait    %steal     %idle
+02:27:54        all     99.25      0.00      0.75      0.00      0.00      0.00
+Average:        all     99.25      0.00      0.75      0.00      0.00      0.00
+Sample 3: Fri Oct 23 02:27:58 UTC 2026
+Linux 5.14.0-654.el9.x86_64 (ip-172-31-10-12.ec2.internal) 	10/23/26 	_x86_64_	(4 CPU)
+
+02:27:58        CPU     %user     %nice   %system   %iowait    %steal     %idle
+02:27:59        all     99.25      0.00      0.75      0.00      0.00      0.00
+Average:        all     99.25      0.00      0.75      0.00      0.00      0.00
+Sample 4: Fri Oct 23 02:28:03 UTC 2026
+Linux 5.14.0-654.el9.x86_64 (ip-172-31-10-12.ec2.internal) 	10/23/26 	_x86_64_	(4 CPU)
+
+02:28:03        CPU     %user     %nice   %system   %iowait    %steal     %idle
+02:28:04        all     99.50      0.00      0.50      0.00      0.00      0.00
+Average:        all     99.50      0.00      0.50      0.00      0.00      0.00
+Sample 5: Fri Oct 23 02:28:08 UTC 2026
+Linux 5.14.0-654.el9.x86_64 (ip-172-31-10-12.ec2.internal) 	10/23/26 	_x86_64_	(4 CPU)
+
+02:28:08        CPU     %user     %nice   %system   %iowait    %steal     %idle
+02:28:09        all     98.26      0.00      1.74      0.00      0.00      0.00
+Average:        all     98.26      0.00      1.74      0.00      0.00      0.00
+Sample 6: Fri Oct 23 02:28:13 UTC 2026
+Linux 5.14.0-654.el9.x86_64 (ip-172-31-10-12.ec2.internal) 	10/23/26 	_x86_64_	(4 CPU)
+
+02:28:13        CPU     %user     %nice   %system   %iowait    %steal     %idle
+02:28:14        all     98.75      0.00      1.25      0.00      0.00      0.00
+Average:        all     98.75      0.00      1.25      0.00      0.00      0.00
+Sample 7: Fri Oct 23 02:28:18 UTC 2026
+Linux 5.14.0-654.el9.x86_64 (ip-172-31-10-12.ec2.internal) 	10/23/26 	_x86_64_	(4 CPU)
+
+02:28:18        CPU     %user     %nice   %system   %iowait    %steal     %idle
+02:28:19        all     99.25      0.00      0.75      0.00      0.00      0.00
+Average:        all     99.25      0.00      0.75      0.00      0.00      0.00
+Sample 8: Fri Oct 23 02:28:23 UTC 2026
+Linux 5.14.0-654.el9.x86_64 (ip-172-31-10-12.ec2.internal) 	10/23/26 	_x86_64_	(4 CPU)
+
+02:28:24        CPU     %user     %nice   %system   %iowait    %steal     %idle
+02:28:25        all     98.26      0.00      1.74      0.00      0.00      0.00
+Average:        all     98.26      0.00      1.74      0.00      0.00      0.00
+Sample 9: Fri Oct 23 02:28:29 UTC 2026
+Linux 5.14.0-654.el9.x86_64 (ip-172-31-10-12.ec2.internal) 	10/23/26 	_x86_64_	(4 CPU)
+
+02:28:29        CPU     %user     %nice   %system   %iowait    %steal     %idle
+02:28:30        all     99.50      0.00      0.50      0.00      0.00      0.00
+Average:        all     99.50      0.00      0.50      0.00      0.00      0.00
+Sample 10: Fri Oct 23 02:28:34 UTC 2026
+Linux 5.14.0-654.el9.x86_64 (ip-172-31-10-12.ec2.internal) 	10/23/26 	_x86_64_	(4 CPU)
+
+02:28:34        CPU     %user     %nice   %system   %iowait    %steal     %idle
+02:28:35        all     99.00      0.00      1.00      0.00      0.00      0.00
+Average:        all     99.00      0.00      1.00      0.00      0.00      0.00
+Sample 11: Fri Oct 23 02:28:39 UTC 2026
+Linux 5.14.0-654.el9.x86_64 (ip-172-31-10-12.ec2.internal) 	10/23/26 	_x86_64_	(4 CPU)
+
+02:28:39        CPU     %user     %nice   %system   %iowait    %steal     %idle
+02:28:40        all     99.25      0.00      0.75      0.00      0.00      0.00
+Average:        all     99.25      0.00      0.75      0.00      0.00      0.00
+Sample 12: Fri Oct 23 02:28:44 UTC 2026
+Linux 5.14.0-654.el9.x86_64 (ip-172-31-10-12.ec2.internal) 	10/23/26 	_x86_64_	(4 CPU)
+
+02:28:44        CPU     %user     %nice   %system   %iowait    %steal     %idle
+02:28:45        all     98.76      0.00      1.24      0.00      0.00      0.00
+Average:        all     98.76      0.00      1.24      0.00      0.00      0.00

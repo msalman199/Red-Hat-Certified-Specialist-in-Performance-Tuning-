@@ -1,0 +1,25 @@
+=== CPU Analysis Report ===
+Date: Sat Oct 24 01:42:36 UTC 2026
+System: Linux ip-172-31-10-100.ec2.internal 5.14.0-654.el9.x86_64 #1 SMP PREEMPT_DYNAMIC Fri Dec 19 08:34:59 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux
+
+CPU Information:
+CPU(s):                                  4
+On-line CPU(s) list:                     0-3
+Model name:                              AMD EPYC 7571
+NUMA node0 CPU(s):                       0-3
+
+Load Average:
+ 01:42:36 up 23 min,  1 user,  load average: 1.96, 1.49, 1.03
+
+Top 10 CPU-consuming processes:
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+dcv          833  0.9  0.3 885116 52940 ?        Sl   01:19   0:13 /usr/libexec/dcv/dcvserver --service
+gdm         2264  0.9  0.7 1532444 120904 tty1   Sl+  01:19   0:13 /usr/libexec/dcv/dcvagent --session-id console --mode system --settings-path /etc/dcv/dcv.conf --log-dir /var/log/dcv --log-level INFO --log-rotate-at-startup
+root           1  0.4  0.1 177288 20168 ?        Ss   01:19   0:06 /usr/lib/systemd/systemd --system --deserialize 44
+gdm         1989  0.3  1.5 4396252 250808 tty1   Sl+  01:19   0:04 /usr/bin/gnome-shell
+root        1871  0.2  0.5 2301460 81232 tty1    Sl+  01:19   0:04 /usr/libexec/Xorg vt1 -displayfd 3 -auth /run/user/42/gdm/Xauthority -nolisten tcp -background none -noreset -keeptty -novtswitch -verbose 3
+cwagent     2747  0.2  0.7 1452760 112436 ?      Ssl  01:20   0:03 /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent -config /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.toml -envconfig /opt/aws/amazon-cloudwatch-agent/etc/env-config.json -otelconfig /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.yaml -pidfile /opt/aws/amazon-cloudwatch-agent/var/amazon-cloudwatch-agent.pid
+root        4724  0.2  0.0      0     0 ?        I    01:25   0:02 [kworker/u16:4-writeback]
+root       84569  0.2  0.2 353096 43284 ?        Ssl  01:38   0:00 /usr/bin/python3 -s /usr/sbin/firewalld --nofork --nopid
+root          45  0.1  0.0      0     0 ?        I    01:19   0:02 [kworker/u16:3-flush-259:0]
+root        4466  0.1  0.0      0     0 ?        I    01:25   0:01 [kworker/1:1-cgroup_destroy]

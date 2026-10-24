@@ -1,0 +1,427 @@
+Lab 8: Real-time Performance Monitoring with gnome-system-monitor
+Objectives
+By the end of this lab, students will be able to:
+
+Install and configure gnome-system-monitor for comprehensive system monitoring
+Monitor CPU utilization patterns and identify performance bottlenecks using both GUI and scripted tools
+Analyze memory usage and detect memory leaks or excessive consumption
+Track running processes and their resource consumption, and manage process priorities
+Generate performance reports, analyze trends over time, and document optimization recommendations
+Prerequisites
+Before starting this lab, students should have:
+
+Basic understanding of Linux operating systems and command-line interface
+Familiarity with system processes and resource management concepts
+Knowledge of CPU, memory, and disk I/O fundamentals
+Understanding of process management in Linux environments (signals, priorities, nice values)
+Basic familiarity with shell scripting (loops, variables, awk/sed)
+Install the required tools before starting (choose the command set matching your distribution):
+
+# For Ubuntu/Debian systems
+sudo apt update && sudo apt upgrade -y
+sudo apt install gnome-system-monitor htop stress-ng bc sysstat lsof net-tools python3 -y
+
+# For CentOS/RHEL/Fedora systems
+sudo dnf update -y
+sudo dnf install gnome-system-monitor htop stress-ng bc sysstat lsof net-tools python3 -y
+Verify the installation:
+
+which gnome-system-monitor
+gnome-system-monitor --version
+stress-ng --version
+Expected result: Each command prints a valid path or version string with no "command not found" errors. If gnome-system-monitor --version fails on a headless cloud machine, you may still complete all scripted portions of this lab using the terminal-based tools (top, ps, free, stress-ng); GUI steps should be performed if a desktop session is available.
+
+Lab Environment Setup
+Ready-to-Use Cloud Machines: Al Nafi provides pre-configured Linux-based cloud machines for this lab. Simply click Start Lab to access your dedicated environment. No need to build your own virtual machine or install additional software initially.
+
+Your cloud machine includes:
+
+Ubuntu 22.04 LTS or CentOS Stream 9
+Root access for system administration
+Network connectivity for package installation
+Sufficient resources for performance testing scenarios
+Task 1: Installing, Configuring, and Baselining gnome-system-monitor
+Subtask 1.1: System Preparation and Interface Familiarization
+Step 1: Launch gnome-system-monitor (if a desktop session is available):
+
+gnome-system-monitor &
+The interface consists of four tabs: Processes (running processes and resource usage), Resources (real-time CPU/memory/network graphs), File Systems (disk usage), and Hardware (component information).
+
+Step 2: Configure display preferences via Preferences in the application menu:
+
+Processes tab: enable "Show all processes", set update interval to 2 seconds
+Resources tab: set update interval to 1 second, graph data points to 60 seconds
+Step 3: In the Processes tab, right-click column headers to add the PID, % CPU, Memory, Priority, and User columns, then click each header to practice sorting ascending/descending.
+
+Deliverable 1.1: A running gnome-system-monitor session (or, on headless systems, a terminal session) with columns configured as above. Expected result: You can sort the process list by CPU usage and by memory usage and correctly identify the top 3 consumers of each resource on your idle system.
+
+Subtask 1.2: Baseline CPU and Memory Measurement Script
+Step 1: Create a combined baseline monitoring script that logs both CPU and memory usage:
+
+cat > cpu_monitor.sh << 'EOF'
+#!/bin/bash
+
+# CPU and memory baseline monitoring script
+LOG_FILE="cpu_usage_log.txt"
+DURATION=60   # 1 minute for baseline
+INTERVAL=5    # 5 seconds
+
+echo "Starting baseline monitoring for $DURATION seconds..."
+echo "Timestamp,CPU_Usage_Percent,Mem_Used_MB,Mem_Total_MB" > "$LOG_FILE"
+
+for ((i=1; i<=DURATION/INTERVAL; i++)); do
+    TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+    CPU_IDLE=$(top -bn1 | grep "Cpu(s)" | awk -F',' '{print $4}' | awk '{print $1}')
+    CPU_USAGE=$(echo "100 - $CPU_IDLE" | bc)
+    MEM_USED=$(free -m | awk 'NR==2{print $3}')
+    MEM_TOTAL=$(free -m | awk 'NR==2{print $2}')
+    echo "$TIMESTAMP,$CPU_USAGE,$MEM_USED,$MEM_TOTAL" >> "$LOG_FILE"
+    sleep $INTERVAL
+done
+
+echo "Baseline monitoring completed. Check $LOG_FILE for results."
+EOF
+
+chmod +x cpu_monitor.sh
+./cpu_monitor.sh
+cat cpu_usage_log.txt
+Deliverable 1.2: The file cpu_usage_log.txt containing 12 timestamped samples of CPU and memory usage. Expected result: A CSV file with a header row and 12 data rows; idle CPU usage typically falls between 1 and 15 percent on an unloaded cloud instance.
+
+Task 2: Stress Testing CPU and Memory, and Analyzing Results
+Subtask 2.1: CPU Stress Testing and Process Identification
+Step 1: Generate CPU load across all cores while your baseline script (or gnome-system-monitor) is observing:
+
+stress-ng --cpu 0 --timeout 60s --metrics-brief
+Step 2: While stress-ng runs, open a second terminal and capture the top CPU consumers:
+
+cat > cpu_analysis.sh << 'EOF'
+#!/bin/bash
+
+echo "=== CPU Analysis Report ==="
+echo "Date: $(date)"
+echo "System: $(uname -a)"
+echo ""
+
+echo "CPU Information:"
+lscpu | grep -E "CPU\(s\)|Model name|CPU MHz"
+echo ""
+
+echo "Load Average:"
+uptime
+echo ""
+
+echo "Top 10 CPU-consuming processes:"
+ps aux --sort=-%cpu | head -11
+EOF
+
+chmod +x cpu_analysis.sh
+./cpu_analysis.sh > cpu_analysis_report.txt
+cat cpu_analysis_report.txt
+Deliverable 2.1: The file cpu_analysis_report.txt captured while stress-ng was active, showing multiple stress-ng-cpu worker processes near the top of the CPU-sorted list. Expected result: Load average values close to or exceeding the number of CPU cores reported by lscpu, and stress-ng worker processes consuming the majority of CPU time in the top-10 list.
+
+Subtask 2.2: Memory Stress Testing and Leak Simulation
+Step 1: Generate memory pressure and observe available memory dropping:
+
+free -m
+stress-ng --vm 1 --vm-bytes 512M --timeout 45s --metrics-brief
+free -m
+Step 2: Create and run a controlled memory leak simulation to practice identifying gradual memory growth:
+
+cat > memory_leak_sim.py << 'EOF'
+#!/usr/bin/env python3
+import time
+
+def memory_leak_simulation(max_iterations=15):
+    """Simulate a bounded memory leak by continuously allocating memory."""
+    memory_hog = []
+    iteration = 0
+
+    print("Starting bounded memory leak simulation...")
+    print(f"Will allocate memory for {max_iterations} iterations (~10MB each), then exit.")
+
+    while iteration < max_iterations:
+        chunk = 'x' * (10 * 1024 * 1024)
+        memory_hog.append(chunk)
+        iteration += 1
+        print(f"Iteration {iteration}: Allocated ~{iteration * 10}MB total")
+        time.sleep(1)
+
+    print("Memory leak simulation finished.")
+    print(f"Total allocated before exit: ~{iteration * 10}MB")
+
+if __name__ == "__main__":
+    memory_leak_simulation()
+EOF
+
+chmod +x memory_leak_sim.py
+python3 memory_leak_sim.py &
+LEAK_PID=$!
+echo "Memory leak simulation PID: $LEAK_PID"
+
+# While it runs, sample memory usage of this specific process three times
+for i in 1 2 3; do
+    ps -p $LEAK_PID -o pid,rss,vsz,%mem,cmd 2>/dev/null
+    sleep 5
+done
+
+wait $LEAK_PID
+Deliverable 2.2: Terminal output showing three ps samples of the leak simulation's RSS (resident memory) column increasing over time, followed by the script's own "finished" message. Expected result: The RSS value in each successive ps sample is noticeably larger than the previous one, demonstrating growing memory consumption of a single PID, and the script terminates cleanly on its own (bounded, not left running indefinitely).
+
+Task 3: Process Management, Reporting, and Trend Analysis
+Subtask 3.1: Process Priority Management and Performance Reporting
+Step 1: Launch a CPU-intensive background process and practice priority (nice) adjustment:
+
+cat > cpu_intensive.sh << 'EOF'
+#!/bin/bash
+echo "Starting CPU-intensive process (PID $$)..."
+END=$((SECONDS+30))
+while [ $SECONDS -lt $END ]; do
+    echo "scale=3000; 4*a(1)" | bc -l > /dev/null
+done
+echo "CPU-intensive process finished."
+EOF
+
+chmod +x cpu_intensive.sh
+./cpu_intensive.sh &
+CPU_PID=$!
+echo "CPU-intensive process PID: $CPU_PID"
+
+# Inspect current niceness, then lower priority (raise nice value)
+ps -o pid,ni,cmd -p $CPU_PID
+renice +10 -p $CPU_PID
+ps -o pid,ni,cmd -p $CPU_PID
+
+wait $CPU_PID
+Deliverable 3.1a: Two ps -o pid,ni,cmd outputs showing the nice value changing from its default (0) to 10 after renice. Expected result: The second ps output shows NI equal to 10 for the same PID, confirming the priority change succeeded.
+
+Step 2: Generate a full system performance report:
+
+cat > performance_report.sh << 'EOF'
+#!/bin/bash
+
+REPORT_FILE="performance_report_$(date +%Y%m%d_%H%M%S).txt"
+
+{
+    echo "=== SYSTEM PERFORMANCE REPORT ==="
+    echo "Generated: $(date)"
+    echo "Hostname: $(hostname)"
+    echo "Uptime: $(uptime)"
+    echo ""
+
+    echo "=== SYSTEM INFORMATION ==="
+    echo "OS: $(grep PRETTY_NAME /etc/os-release | cut -d'"' -f2)"
+    echo "Kernel: $(uname -r)"
+    echo "Architecture: $(uname -m)"
+    echo ""
+
+    echo "=== CPU INFORMATION ==="
+    lscpu | grep -E "CPU\(s\)|Model name|CPU MHz|Cache"
+    echo ""
+    echo "Current CPU Usage:"
+    top -bn1 | grep "Cpu(s)"
+    echo ""
+
+    echo "=== MEMORY INFORMATION ==="
+    free -h
+    echo ""
+
+    echo "=== TOP PROCESSES BY CPU ==="
+    ps aux --sort=-%cpu | head -10
+    echo ""
+
+    echo "=== TOP PROCESSES BY MEMORY ==="
+    ps aux --sort=-%mem | head -10
+    echo ""
+
+    echo "=== DISK USAGE ==="
+    df -h
+    echo ""
+
+    echo "=== NETWORK CONNECTIONS ==="
+    echo "Total listening/established sockets: $(netstat -tuln 2>/dev/null | wc -l)"
+    echo ""
+
+} > "$REPORT_FILE"
+
+echo "Performance report generated: $REPORT_FILE"
+cat "$REPORT_FILE"
+EOF
+
+chmod +x performance_report.sh
+./performance_report.sh
+Deliverable 3.1b: A timestamped performance_report_*.txt file containing all eight report sections listed above. Expected result: The generated file exists in your working directory (ls performance_report_*.txt shows it) and printing it to the terminal shows populated, non-empty values in every section.
+
+Subtask 3.2: Advanced Logging and Trend Analysis
+Step 1: Run a short advanced monitoring session that logs CPU, memory, and process snapshots with alert thresholds:
+
+cat > advanced_monitor.sh << 'EOF'
+#!/bin/bash
+
+LOG_DIR="monitoring_logs"
+mkdir -p "$LOG_DIR"
+
+MONITOR_DURATION=60   # 1 minute for lab purposes
+SAMPLE_INTERVAL=10    # 10 seconds
+ALERT_CPU_THRESHOLD=80
+ALERT_MEM_THRESHOLD=85
+
+CPU_LOG="$LOG_DIR/cpu_$(date +%Y%m%d_%H%M%S).log"
+MEM_LOG="$LOG_DIR/memory_$(date +%Y%m%d_%H%M%S).log"
+PROC_LOG="$LOG_DIR/processes_$(date +%Y%m%d_%H%M%S).log"
+ALERT_LOG="$LOG_DIR/alerts_$(date +%Y%m%d_%H%M%S).log"
+
+touch "$ALERT_LOG"
+
+log_cpu_metrics() {
+    local timestamp
+    timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    local cpu_idle
+    cpu_idle=$(top -bn1 | grep "Cpu(s)" | awk -F',' '{print $4}' | awk '{print $1}')
+    local cpu_usage
+    cpu_usage=$(echo "100 - $cpu_idle" | bc)
+    local load_avg
+    load_avg=$(uptime | awk -F'load average:' '{print $2}' | awk '{print $1}' | sed 's/,//')
+
+    echo "$timestamp,$cpu_usage,$load_avg" >> "$CPU_LOG"
+
+    if (( $(echo "$cpu_usage > $ALERT_CPU_THRESHOLD" | bc -l) )); then
+        echo "$timestamp,CPU,High CPU usage: $cpu_usage%" >> "$ALERT_LOG"
+    fi
+}
+
+log_memory_metrics() {
+    local timestamp
+    timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    local mem_info
+    mem_info=$(free -m | awk 'NR==2{printf "%d,%d,%d,%.1f", $2,$3,$4,$3*100/$2}')
+
+    echo "$timestamp,$mem_info" >> "$MEM_LOG"
+
+    local mem_percent
+    mem_percent=$(echo "$mem_info" | cut -d',' -f4)
+    if (( $(echo "$mem_percent > $ALERT_MEM_THRESHOLD" | bc -l) )); then
+        echo "$timestamp,MEMORY,High memory usage: $mem_percent%" >> "$ALERT_LOG"
+    fi
+}
+
+log_top_processes() {
+    local timestamp
+    timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    echo "=== $timestamp ===" >> "$PROC_LOG"
+    ps aux --sort=-%cpu | head -6 >> "$PROC_LOG"
+    echo "" >> "$PROC_LOG"
+}
+
+echo "Starting advanced monitoring..."
+echo "Duration: $MONITOR_DURATION seconds"
+echo "Interval: $SAMPLE_INTERVAL seconds"
+echo "Logs will be saved in: $LOG_DIR"
+
+echo "Timestamp,CPU_Usage_Percent,Load_Average" > "$CPU_LOG"
+echo "Timestamp,Total_MB,Used_MB,Free_MB,Usage_Percent" > "$MEM_LOG"
+echo "Advanced Process Monitoring Log" > "$PROC_LOG"
+
+for ((i=1; i<=MONITOR_DURATION/SAMPLE_INTERVAL; i++)); do
+    log_cpu_metrics
+    log_memory_metrics
+    log_top_processes
+    echo "Sample $i/$((MONITOR_DURATION/SAMPLE_INTERVAL)) completed"
+    sleep $SAMPLE_INTERVAL
+done
+
+echo "Monitoring completed. Check logs in $LOG_DIR"
+EOF
+
+chmod +x advanced_monitor.sh
+./advanced_monitor.sh
+Step 2: Analyze the CPU trend data collected above:
+
+cat > trend_analyzer.sh << 'EOF'
+#!/bin/bash
+
+# Performance trend analysis script
+LOG_DIR="monitoring_logs"
+
+analyze_cpu_trends() {
+    echo "=== CPU TREND ANALYSIS ==="
+
+    local cpu_log
+    cpu_log=$(ls -t "$LOG_DIR"/cpu_*.log 2>/dev/null | head -1)
+
+    if [ -z "$cpu_log" ] || [ ! -f "$cpu_log" ]; then
+        echo "No CPU log files found in $LOG_DIR. Run advanced_monitor.sh first."
+        return 1
+    fi
+
+    echo "Analyzing CPU data from: $cpu_log"
+
+    local avg_cpu max_cpu min_cpu
+    avg_cpu=$(awk -F',' 'NR>1{sum+=$2; count++} END{if(count>0) printf "%.2f", sum/count; else print "0"}' "$cpu_log")
+    max_cpu=$(awk -F',' 'NR>1{if($2>max || NR==2) max=$2} END{print max}' "$cpu_log")
+    min_cpu=$(awk -F',' 'NR>1{if($2<min || NR==2) min=$2} END{print min}' "$cpu_log")
+
+    echo "Average CPU Usage: $avg_cpu%"
+    echo "Maximum CPU Usage: $max_cpu%"
+    echo "Minimum CPU Usage: $min_cpu%"
+
+    echo ""
+    echo "Identify peak CPU sample (timestamp and value):"
+    awk -F',' 'NR>1{if($2>max || NR==2){max=$2; ts=$1}} END{print ts", "max"%"}' "$cpu_log"
+}
+
+analyze_memory_trends() {
+    echo ""
+    echo "=== MEMORY TREND ANALYSIS ==="
+
+    local mem_log
+    mem_log=$(ls -t "$LOG_DIR"/memory_*.log 2>/dev/null | head -1)
+
+    if [ -z "$mem_log" ] || [ ! -f "$mem_log" ]; then
+        echo "No memory log files found in $LOG_DIR. Run advanced_monitor.sh first."
+        return 1
+    fi
+
+    echo "Analyzing memory data from: $mem_log"
+
+    local avg_mem max_mem
+    avg_mem=$(awk -F',' 'NR>1{sum+=$5; count++} END{if(count>0) printf "%.2f", sum/count; else print "0"}' "$mem_log")
+    max_mem=$(awk -F',' 'NR>1{if($5>max || NR==2) max=$5} END{print max}' "$mem_log")
+
+    echo "Average Memory Usage: $avg_mem%"
+    echo "Peak Memory Usage: $max_mem%"
+}
+
+check_alerts() {
+    echo ""
+    echo "=== ALERT SUMMARY ==="
+
+    local alert_log
+    alert_log=$(ls -t "$LOG_DIR"/alerts_*.log 2>/dev/null | head -1)
+
+    if [ -z "$alert_log" ] || [ ! -s "$alert_log" ]; then
+        echo "No alerts were triggered during the monitoring window."
+    else
+        echo "Alerts found in $alert_log:"
+        cat "$alert_log"
+    fi
+}
+
+# Main execution
+analyze_cpu_trends
+analyze_memory_trends
+check_alerts
+
+echo ""
+echo "Trend analysis completed."
+EOF
+
+chmod +x trend_analyzer.sh
+./trend_analyzer.sh
+Deliverable 3.2: The populated monitoring_logs/ directory containing CPU, memory, process, and alert log files, plus the terminal output of trend_analyzer.sh showing computed average, maximum, and minimum CPU usage, average and peak memory usage, and an alert summary. Expected result: trend_analyzer.sh runs to completion without syntax errors, printing numeric average/max/min CPU statistics, a peak-usage timestamp, memory statistics, and either an alert list or the "no alerts" message.
+
+Expected Outcomes
+A working monitoring toolkit (baseline, stress-test, reporting, and trend-analysis scripts) capable of capturing and summarizing real-time CPU and memory behavior on a Linux system
+Demonstrated ability to correlate GUI observations in gnome-system-monitor with command-line data (ps, top, free) for the same workload
+A complete, timestamped performance report and a trend analysis summary that a system administrator could use to justify a resource or configuration change
+Conclusion
+In this lab, students installed and configured gnome-system-monitor alongside complementary command-line tools to observe, stress-test, and analyze CPU and memory performance on a Linux system. Through hands-on tasks, students built a baseline monitoring script, generated controlled CPU and memory load with stress-ng and a bounded Python memory-leak simulation, and correlated GUI graphs with process-level data using ps and top. Students then practiced process priority management with renice, produced a comprehensive timestamped performance report, and built an advanced logging and trend-analysis pipeline that computed average, minimum, and peak resource usage while flagging threshold-based alerts. Together these exercises reinforced the core objectives of the lab: recognizing performance bottlenecks, distinguishing normal from abnormal resource consumption, and translating raw monitoring data into actionable optimization decisions. For further study, students are encouraged to extend the alerting logic to send notifications (for example, via email or a messaging webhook), integrate the logging scripts with a persistent time-series tool such as Prometheus and Grafana, and practice these same techniques against real multi-process workloads such as a web server or database under load.

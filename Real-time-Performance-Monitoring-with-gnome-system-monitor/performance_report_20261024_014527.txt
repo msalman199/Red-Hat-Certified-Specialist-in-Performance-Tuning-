@@ -1,0 +1,63 @@
+=== SYSTEM PERFORMANCE REPORT ===
+Generated: Sat Oct 24 01:45:27 UTC 2026
+Hostname: ip-172-31-10-100.ec2.internal
+Uptime:  01:45:27 up 26 min,  1 user,  load average: 0.77, 1.13, 0.97
+
+=== SYSTEM INFORMATION ===
+OS: CentOS Stream 9
+Kernel: 5.14.0-654.el9.x86_64
+Architecture: x86_64
+
+=== CPU INFORMATION ===
+CPU(s):                                  4
+On-line CPU(s) list:                     0-3
+Model name:                              AMD EPYC 7571
+NUMA node0 CPU(s):                       0-3
+
+Current CPU Usage:
+%Cpu(s):  1.5 us,  1.5 sy,  0.0 ni, 95.5 id,  0.0 wa,  0.0 hi,  1.5 si,  0.0 st
+
+=== MEMORY INFORMATION ===
+               total        used        free      shared  buff/cache   available
+Mem:            15Gi       1.6Gi       8.6Gi        28Mi       5.3Gi        13Gi
+Swap:             0B          0B          0B
+
+=== TOP PROCESSES BY CPU ===
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+centos    111195  1.0  0.0 310768 12528 pts/0    S+   01:45   0:00 curl --location https://cloudbot.alnafi.org/direct-log-hit --header X-API-Key: :Cl0MZ#/Zr4)Ap-r-3d%9,MJm!QWjW6H}[\^ --header Content-Type: application/x-www-form-urlencoded --data-urlencode filename=185409_hafizmuhammadsalman13_gmail_com_Lab-8_-Real-time-Performance-Monitoring-with-gnome-system-monitor_lab_IP_34_229_6_52 --max-time 15 --silent --show-error --write-out \n[%{http_code}] API notification sent
+dcv          833  0.9  0.3 885116 52956 ?        Sl   01:19   0:14 /usr/libexec/dcv/dcvserver --service
+gdm         2264  0.9  0.8 1532444 139644 tty1   Sl+  01:19   0:14 /usr/libexec/dcv/dcvagent --session-id console --mode system --settings-path /etc/dcv/dcv.conf --log-dir /var/log/dcv --log-level INFO --log-rotate-at-startup
+centos    111060  0.5  0.0 310768 12516 pts/0    S+   01:45   0:00 curl --location https://cloudbot.alnafi.org/direct-log-hit --header X-API-Key: :Cl0MZ#/Zr4)Ap-r-3d%9,MJm!QWjW6H}[\^ --header Content-Type: application/x-www-form-urlencoded --data-urlencode filename=185409_hafizmuhammadsalman13_gmail_com_Lab-8_-Real-time-Performance-Monitoring-with-gnome-system-monitor_lab_IP_34_229_6_52 --max-time 15 --silent --show-error --write-out \n[%{http_code}] API notification sent
+root           1  0.4  0.1 177288 20268 ?        Ss   01:19   0:06 /usr/lib/systemd/systemd --system --deserialize 44
+gdm         1989  0.3  1.5 4396376 250936 tty1   Sl+  01:19   0:04 /usr/bin/gnome-shell
+centos    111150  0.3  0.0 310768 12596 pts/0    S+   01:45   0:00 curl --location https://cloudbot.alnafi.org/direct-log-hit --header X-API-Key: :Cl0MZ#/Zr4)Ap-r-3d%9,MJm!QWjW6H}[\^ --header Content-Type: application/x-www-form-urlencoded --data-urlencode filename=185409_hafizmuhammadsalman13_gmail_com_Lab-8_-Real-time-Performance-Monitoring-with-gnome-system-monitor_lab_IP_34_229_6_52 --max-time 15 --silent --show-error --write-out \n[%{http_code}] API notification sent
+root        1871  0.2  0.5 2301460 81328 tty1    Sl+  01:19   0:04 /usr/libexec/Xorg vt1 -displayfd 3 -auth /run/user/42/gdm/Xauthority -nolisten tcp -background none -noreset -keeptty -novtswitch -verbose 3
+cwagent     2747  0.2  0.7 1452760 118868 ?      Ssl  01:20   0:03 /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent -config /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.toml -envconfig /opt/aws/amazon-cloudwatch-agent/etc/env-config.json -otelconfig /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.yaml -pidfile /opt/aws/amazon-cloudwatch-agent/var/amazon-cloudwatch-agent.pid
+
+=== TOP PROCESSES BY MEMORY ===
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+gdm         1989  0.3  1.5 4396376 250936 tty1   Sl+  01:19   0:04 /usr/bin/gnome-shell
+gdm         2264  0.9  0.8 1532444 139644 tty1   Sl+  01:19   0:14 /usr/libexec/dcv/dcvagent --session-id console --mode system --settings-path /etc/dcv/dcv.conf --log-dir /var/log/dcv --log-level INFO --log-rotate-at-startup
+cwagent     2747  0.2  0.7 1452760 118868 ?      Ssl  01:20   0:03 /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent -config /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.toml -envconfig /opt/aws/amazon-cloudwatch-agent/etc/env-config.json -otelconfig /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.yaml -pidfile /opt/aws/amazon-cloudwatch-agent/var/amazon-cloudwatch-agent.pid
+root        1871  0.2  0.5 2301460 81328 tty1    Sl+  01:19   0:04 /usr/libexec/Xorg vt1 -displayfd 3 -auth /run/user/42/gdm/Xauthority -nolisten tcp -background none -noreset -keeptty -novtswitch -verbose 3
+dcv          833  0.9  0.3 885116 52956 ?        Rl   01:19   0:14 /usr/libexec/dcv/dcvserver --service
+root       84569  0.1  0.2 353096 43920 ?        Ssl  01:38   0:00 /usr/bin/python3 -s /usr/sbin/firewalld --nofork --nopid
+root       84582  0.0  0.1 484936 30380 ?        Ssl  01:38   0:00 /usr/bin/python3 -Es /usr/sbin/tuned -l -P
+gdm         2247  0.0  0.1 264008 28748 tty1     Sl+  01:19   0:00 /usr/libexec/dcv/dcvagentlauncher
+root       84918  0.0  0.1 483456 28280 ?        Ssl  01:38   0:00 /usr/bin/python3 -Es /usr/sbin/tuned-ppd -l
+
+=== DISK USAGE ===
+Filesystem      Size  Used Avail Use% Mounted on
+devtmpfs        7.5G     0  7.5G   0% /dev
+tmpfs           7.7G     0  7.7G   0% /dev/shm
+tmpfs           3.1G   27M  3.1G   1% /run
+efivarfs        128K  4.1K  119K   4% /sys/firmware/efi/efivars
+/dev/nvme0n1p4   29G  9.1G   20G  32% /
+/dev/nvme0n1p3  966M  829M   72M  93% /boot
+/dev/nvme0n1p2  500M   12M  489M   3% /boot/efi
+tmpfs           1.6G   56K  1.6G   1% /run/user/42
+tmpfs           1.6G   36K  1.6G   1% /run/user/1001
+
+=== NETWORK CONNECTIONS ===
+Total listening/established sockets: 10
+

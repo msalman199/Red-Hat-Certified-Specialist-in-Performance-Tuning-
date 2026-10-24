@@ -1,0 +1,49 @@
+Advanced Process Monitoring Log
+=== 2026-10-24 01:45:41 ===
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+dcv          833  0.9  0.3 885116 52956 ?        Sl   01:19   0:15 /usr/libexec/dcv/dcvserver --service
+gdm         2264  0.9  0.8 1532444 139644 tty1   Sl+  01:19   0:14 /usr/libexec/dcv/dcvagent --session-id console --mode system --settings-path /etc/dcv/dcv.conf --log-dir /var/log/dcv --log-level INFO --log-rotate-at-startup
+root           1  0.4  0.1 177288 20268 ?        Ss   01:19   0:06 /usr/lib/systemd/systemd --system --deserialize 44
+root        1871  0.2  0.5 2301460 81328 tty1    Sl+  01:19   0:04 /usr/libexec/Xorg vt1 -displayfd 3 -auth /run/user/42/gdm/Xauthority -nolisten tcp -background none -noreset -keeptty -novtswitch -verbose 3
+gdm         1989  0.2  1.5 4396376 250936 tty1   Sl+  01:19   0:04 /usr/bin/gnome-shell
+
+=== 2026-10-24 01:45:51 ===
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+dcv          833  0.9  0.3 885116 52956 ?        Sl   01:19   0:15 /usr/libexec/dcv/dcvserver --service
+gdm         2264  0.9  0.8 1532444 139644 tty1   Sl+  01:19   0:14 /usr/libexec/dcv/dcvagent --session-id console --mode system --settings-path /etc/dcv/dcv.conf --log-dir /var/log/dcv --log-level INFO --log-rotate-at-startup
+root           1  0.4  0.1 177288 20268 ?        Ss   01:19   0:06 /usr/lib/systemd/systemd --system --deserialize 44
+root        1871  0.2  0.5 2301460 81328 tty1    Sl+  01:19   0:04 /usr/libexec/Xorg vt1 -displayfd 3 -auth /run/user/42/gdm/Xauthority -nolisten tcp -background none -noreset -keeptty -novtswitch -verbose 3
+gdm         1989  0.2  1.5 4396376 250936 tty1   Sl+  01:19   0:04 /usr/bin/gnome-shell
+
+=== 2026-10-24 01:46:01 ===
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+dcv          833  0.9  0.3 885116 52956 ?        Sl   01:19   0:15 /usr/libexec/dcv/dcvserver --service
+gdm         2264  0.9  0.8 1532444 139644 tty1   Sl+  01:19   0:14 /usr/libexec/dcv/dcvagent --session-id console --mode system --settings-path /etc/dcv/dcv.conf --log-dir /var/log/dcv --log-level INFO --log-rotate-at-startup
+root           1  0.4  0.1 177288 20268 ?        Ss   01:19   0:06 /usr/lib/systemd/systemd --system --deserialize 44
+root        1871  0.2  0.5 2301460 81328 tty1    Sl+  01:19   0:04 /usr/libexec/Xorg vt1 -displayfd 3 -auth /run/user/42/gdm/Xauthority -nolisten tcp -background none -noreset -keeptty -novtswitch -verbose 3
+gdm         1989  0.2  1.5 4396376 250936 tty1   Sl+  01:19   0:04 /usr/bin/gnome-shell
+
+=== 2026-10-24 01:46:11 ===
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+dcv          833  0.9  0.3 885116 52956 ?        Sl   01:19   0:15 /usr/libexec/dcv/dcvserver --service
+gdm         2264  0.9  0.8 1532444 139644 tty1   Sl+  01:19   0:14 /usr/libexec/dcv/dcvagent --session-id console --mode system --settings-path /etc/dcv/dcv.conf --log-dir /var/log/dcv --log-level INFO --log-rotate-at-startup
+root           1  0.4  0.1 177288 20268 ?        Ss   01:19   0:06 /usr/lib/systemd/systemd --system --deserialize 44
+root        1871  0.2  0.5 2301460 81328 tty1    Sl+  01:19   0:04 /usr/libexec/Xorg vt1 -displayfd 3 -auth /run/user/42/gdm/Xauthority -nolisten tcp -background none -noreset -keeptty -novtswitch -verbose 3
+gdm         1989  0.2  1.5 4396376 250936 tty1   Sl+  01:19   0:04 /usr/bin/gnome-shell
+
+=== 2026-10-24 01:46:22 ===
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+dcv          833  0.9  0.3 885116 52956 ?        Sl   01:19   0:15 /usr/libexec/dcv/dcvserver --service
+gdm         2264  0.9  0.8 1532444 139644 tty1   Sl+  01:19   0:15 /usr/libexec/dcv/dcvagent --session-id console --mode system --settings-path /etc/dcv/dcv.conf --log-dir /var/log/dcv --log-level INFO --log-rotate-at-startup
+root           1  0.4  0.1 177288 20268 ?        Ss   01:19   0:06 /usr/lib/systemd/systemd --system --deserialize 44
+root        1871  0.2  0.5 2301460 81328 tty1    Sl+  01:19   0:04 /usr/libexec/Xorg vt1 -displayfd 3 -auth /run/user/42/gdm/Xauthority -nolisten tcp -background none -noreset -keeptty -novtswitch -verbose 3
+gdm         1989  0.2  1.5 4396376 250936 tty1   Sl+  01:19   0:04 /usr/bin/gnome-shell
+
+=== 2026-10-24 01:46:32 ===
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+dcv          833  0.9  0.3 885116 52956 ?        Sl   01:19   0:15 /usr/libexec/dcv/dcvserver --service
+gdm         2264  0.9  0.8 1532444 139644 tty1   Sl+  01:19   0:15 /usr/libexec/dcv/dcvagent --session-id console --mode system --settings-path /etc/dcv/dcv.conf --log-dir /var/log/dcv --log-level INFO --log-rotate-at-startup
+root           1  0.4  0.1 177288 20268 ?        Ss   01:19   0:06 /usr/lib/systemd/systemd --system --deserialize 44
+root        1871  0.2  0.5 2301460 81328 tty1    Sl+  01:19   0:04 /usr/libexec/Xorg vt1 -displayfd 3 -auth /run/user/42/gdm/Xauthority -nolisten tcp -background none -noreset -keeptty -novtswitch -verbose 3
+gdm         1989  0.2  1.5 4396376 250936 tty1   Sl+  01:19   0:04 /usr/bin/gnome-shell
+

@@ -1,0 +1,233 @@
+=== SYSTEM PROCESS ANALYSIS REPORT ===
+Generated: Sat Oct 24 04:56:28 UTC 2026
+Hostname: ip-172-31-10-212.ec2.internal
+Uptime:  04:56:28 up 6 min,  1 user,  load average: 1.48, 0.79, 0.35
+
+=== SYSTEM SUMMARY ===
+Total processes: 195
+Running processes: 0
+Sleeping processes: 126
+Zombie processes: 0
+
+=== TOP RESOURCE CONSUMERS ===
+
+Top 10 CPU consumers:
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+gdm        2272   0.9%   0.7% /usr/libexec/dcv/dcvagent
+dcv         832   0.8%   0.3% /usr/libexec/dcv/dcvserver
+gdm        1990   0.8%   1.4% /usr/bin/gnome-shell
+root          1   0.6%   0.1% /usr/lib/systemd/systemd
+centos     8070   0.4%   0.0% curl
+root         10   0.3%   0.0% [kworker/u16:0-events_unbound]
+root       1860   0.3%   0.4% /usr/libexec/Xorg
+centos     2428   0.3%   0.0% -bash
+cwagent    3092   0.3%   0.7% /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent
+centos     8115   0.3%   0.0% curl
+
+Top 10 Memory consumers:
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+gdm        1990   0.8%   1.4% /usr/bin/gnome-shell
+cwagent    3092   0.3%   0.7% /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent
+gdm        2272   0.9%   0.7% /usr/libexec/dcv/dcvagent
+root       1860   0.3%   0.4% /usr/libexec/Xorg
+dcv         832   0.8%   0.3% /usr/libexec/dcv/dcvserver
+root        801   0.1%   0.2% /usr/bin/python3
+root        971   0.0%   0.1% /usr/bin/python3
+gdm        2245   0.0%   0.1% /usr/libexec/dcv/dcvagentlauncher
+root       2041   0.0%   0.1% /usr/bin/python3
+gdm        2290   0.0%   0.1% /usr/bin/gjs
+
+=== PROCESS TREE ===
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root           2  0.0  0.0      0     0 ?        S    04:49   0:00 [kthreadd]
+root           3  0.0  0.0      0     0 ?        S    04:49   0:00  \_ [pool_workqueue_]
+root           4  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/R-rcu_g]
+root           5  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/R-sync_]
+root           6  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/R-slub_]
+root           7  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/R-netns]
+root           8  0.0  0.0      0     0 ?        I    04:49   0:00  \_ [kworker/0:0-cgroup_destroy]
+root           9  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/0:0H-events_highpri]
+root          10  0.3  0.0      0     0 ?        I    04:49   0:01  \_ [kworker/u16:0-events_unbound]
+root          11  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/R-mm_pe]
+root          12  0.0  0.0      0     0 ?        I    04:49   0:00  \_ [kworker/u16:1-writeback]
+root          13  0.0  0.0      0     0 ?        I    04:49   0:00  \_ [rcu_tasks_kthre]
+root          14  0.0  0.0      0     0 ?        I    04:49   0:00  \_ [rcu_tasks_rude_]
+root          15  0.0  0.0      0     0 ?        I    04:49   0:00  \_ [rcu_tasks_trace]
+root          16  0.0  0.0      0     0 ?        S    04:49   0:00  \_ [ksoftirqd/0]
+root          17  0.1  0.0      0     0 ?        S<   04:49   0:00  \_ [pr/ttyS0]
+root          18  0.0  0.0      0     0 ?        I    04:49   0:00  \_ [rcu_preempt]
+root          19  0.0  0.0      0     0 ?        S    04:49   0:00  \_ [rcu_exp_par_gp_]
+root          20  0.0  0.0      0     0 ?        S    04:49   0:00  \_ [rcu_exp_gp_kthr]
+root          21  0.0  0.0      0     0 ?        S    04:49   0:00  \_ [migration/0]
+root          22  0.0  0.0      0     0 ?        S    04:49   0:00  \_ [idle_inject/0]
+root          24  0.0  0.0      0     0 ?        S    04:49   0:00  \_ [cpuhp/0]
+root          25  0.0  0.0      0     0 ?        S    04:49   0:00  \_ [cpuhp/1]
+root          26  0.0  0.0      0     0 ?        S    04:49   0:00  \_ [idle_inject/1]
+root          27  0.0  0.0      0     0 ?        S    04:49   0:00  \_ [migration/1]
+root          28  0.0  0.0      0     0 ?        S    04:49   0:00  \_ [ksoftirqd/1]
+root          30  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/1:0H-events_highpri]
+root          31  0.0  0.0      0     0 ?        S    04:49   0:00  \_ [cpuhp/2]
+root          32  0.0  0.0      0     0 ?        S    04:49   0:00  \_ [idle_inject/2]
+root          33  0.0  0.0      0     0 ?        S    04:49   0:00  \_ [migration/2]
+root          34  0.0  0.0      0     0 ?        S    04:49   0:00  \_ [ksoftirqd/2]
+root          35  0.0  0.0      0     0 ?        I    04:49   0:00  \_ [kworker/2:0-inet_frag_wq]
+root          36  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/2:0H-events_highpri]
+root          37  0.0  0.0      0     0 ?        S    04:49   0:00  \_ [cpuhp/3]
+root          38  0.0  0.0      0     0 ?        S    04:49   0:00  \_ [idle_inject/3]
+root          39  0.0  0.0      0     0 ?        S    04:49   0:00  \_ [migration/3]
+root          40  0.0  0.0      0     0 ?        S    04:49   0:00  \_ [ksoftirqd/3]
+root          41  0.0  0.0      0     0 ?        I    04:49   0:00  \_ [kworker/3:0-events]
+root          42  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/3:0H-events_highpri]
+root          44  0.0  0.0      0     0 ?        I    04:49   0:00  \_ [kworker/u16:2-flush-259:0]
+root          45  0.0  0.0      0     0 ?        I    04:49   0:00  \_ [kworker/u16:3-events_unbound]
+root          46  0.0  0.0      0     0 ?        S    04:49   0:00  \_ [kdevtmpfs]
+root          47  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/R-inet_]
+root          48  0.0  0.0      0     0 ?        S    04:49   0:00  \_ [kauditd]
+root          49  0.0  0.0      0     0 ?        S    04:49   0:00  \_ [khungtaskd]
+root          50  0.0  0.0      0     0 ?        S    04:49   0:00  \_ [oom_reaper]
+root          51  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/R-write]
+root          52  0.0  0.0      0     0 ?        S    04:49   0:00  \_ [kcompactd0]
+root          53  0.0  0.0      0     0 ?        SN   04:49   0:00  \_ [ksmd]
+root          54  0.0  0.0      0     0 ?        SN   04:49   0:00  \_ [khugepaged]
+root          55  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/R-crypt]
+root          56  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/R-kbloc]
+root          57  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/R-kinte]
+root          58  0.0  0.0      0     0 ?        S    04:49   0:00  \_ [irq/9-acpi]
+root          60  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/R-tpm_d]
+root          61  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/R-md]
+root          62  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/R-md_bi]
+root          63  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/R-edac-]
+root          64  0.0  0.0      0     0 ?        S    04:49   0:00  \_ [watchdogd]
+root          65  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/3:1H-xfs-log/nvme0n1p4]
+root          67  0.0  0.0      0     0 ?        S    04:49   0:00  \_ [kswapd0]
+root          69  0.0  0.0      0     0 ?        I    04:49   0:00  \_ [kworker/1:1-cgroup_destroy]
+root          84  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/R-kthro]
+root          88  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/R-acpi_]
+root          89  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/R-kmpat]
+root          90  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/R-kalua]
+root          91  0.0  0.0      0     0 ?        I    04:49   0:00  \_ [kworker/1:2-events]
+root          92  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/R-mld]
+root          93  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/2:1H-kblockd]
+root          94  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/R-ipv6_]
+root          99  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/R-kstrp]
+root         105  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/u17:0]
+root         212  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/1:1H-kblockd]
+root         257  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/0:1H-kblockd]
+root         260  0.0  0.0      0     0 ?        I    04:49   0:00  \_ [kworker/2:3-mm_percpu_wq]
+root         366  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/R-iscsi]
+root         369  0.0  0.0      0     0 ?        I    04:49   0:00  \_ [kworker/1:3-events]
+root         370  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/R-tls-s]
+root         371  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/R-cnic_]
+root         372  0.0  0.0      0     0 ?        S<   04:49   0:00  \_ [bnx2i_thread/0]
+root         373  0.0  0.0      0     0 ?        S<   04:49   0:00  \_ [bnx2i_thread/1]
+root         374  0.0  0.0      0     0 ?        S<   04:49   0:00  \_ [bnx2i_thread/2]
+root         375  0.0  0.0      0     0 ?        S<   04:49   0:00  \_ [bnx2i_thread/3]
+root         451  0.0  0.0      0     0 ?        I    04:49   0:00  \_ [kworker/3:3-cgroup_destroy]
+root         493  0.0  0.0      0     0 ?        I    04:49   0:00  \_ [kworker/0:3-events]
+root         541  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/R-nvme-]
+root         542  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/R-nvme-]
+root         546  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/R-nvme-]
+root         547  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/R-ena]
+root         549  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/R-nvme-]
+root         553  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/R-nvme_]
+root         557  0.0  0.0      0     0 ?        I    04:49   0:00  \_ [kworker/u16:4-events_unbound]
+root         583  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/R-xfsal]
+root         584  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/R-xfs_m]
+root         585  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/R-xfs-b]
+root         586  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/R-xfs-c]
+root         587  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/R-xfs-r]
+root         588  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/R-xfs-b]
+root         589  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/R-xfs-i]
+root         590  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/R-xfs-l]
+root         591  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/R-xfs-c]
+root         592  0.0  0.0      0     0 ?        S    04:49   0:00  \_ [xfsaild/nvme0n1]
+root         757  0.0  0.0      0     0 ?        S    04:49   0:00  \_ [jbd2/nvme0n1p3-]
+root         758  0.0  0.0      0     0 ?        I<   04:49   0:00  \_ [kworker/R-ext4-]
+root        6598  0.0  0.0      0     0 ?        I    04:55   0:00  \_ [kworker/1:0]
+root           1  0.6  0.1 175984 18520 ?        Ss   04:49   0:02 /usr/lib/systemd/systemd --switched-root --system --deserialize 28
+root         687  0.0  0.0  28580 11324 ?        Ss   04:49   0:00 /usr/lib/systemd/systemd-journald
+root         701  0.0  0.0  39628 14092 ?        Ss   04:49   0:00 /usr/lib/systemd/systemd-udevd
+root         767  0.0  0.0  93516  2736 ?        S<sl 04:49   0:00 /sbin/auditd
+root         769  0.0  0.0   7712  3532 ?        S<   04:49   0:00  \_ /usr/sbin/sedispatch
+dbus         795  0.0  0.0  10948  5020 ?        Ss   04:49   0:00 /usr/bin/dbus-broker-launch --scope system --audit
+dbus         796  0.0  0.0   7016  4800 ?        S    04:49   0:00  \_ dbus-broker --log 4 --controller 9 --machine-id ec203a0183603f3afb7903c5e1afeb36 --max-bytes 536870912 --max-fds 4096 --max-matches 131072 --audit
+root         801  0.1  0.2 354548 46148 ?        Ssl  04:49   0:00 /usr/bin/python3 -s /usr/sbin/firewalld --nofork --nopid
+root         802  0.0  0.0  82732  4528 ?        Ssl  04:49   0:00 /usr/sbin/irqbalance
+libstor+     803  0.0  0.0   2772  1960 ?        Ss   04:49   0:00 /usr/bin/lsmd -d
+rtkit        806  0.0  0.0 154072  3624 ?        SNsl 04:49   0:00 /usr/libexec/rtkit-daemon
+root         807  0.0  0.0 525896  7576 ?        Ssl  04:49   0:00 /usr/libexec/accounts-daemon
+root         809  0.0  0.0  23556 13312 ?        Ss   04:49   0:00 /usr/lib/systemd/systemd-logind
+root         813  0.0  0.0 395972 13768 ?        Ssl  04:49   0:00 /usr/libexec/udisks2/udisksd
+root         814  0.0  0.0 449080  6812 ?        Ssl  04:49   0:00 /usr/libexec/upowerd
+dcv          829  0.0  0.0 222972  3388 ?        Ss   04:49   0:00 /usr/bin/bash /usr/bin/dcvserver -d --service
+dcv          832  0.8  0.3 885136 52792 ?        Sl   04:49   0:03  \_ /usr/libexec/dcv/dcvserver --service
+chrony       838  0.0  0.0  85720  4216 ?        S    04:49   0:00 /usr/sbin/chronyd -F 2
+polkitd      841  0.1  0.1 2715292 25812 ?       Ssl  04:49   0:00 /usr/lib/polkit-1/polkitd --no-debug
+root         963  0.0  0.1 478392 22120 ?        Ssl  04:49   0:00 /usr/sbin/NetworkManager --no-daemon
+root         970  0.0  0.0 223104  3556 ?        Ss   04:49   0:00 /bin/bash /usr/local/bin/health-monitor
+root        1241  0.0  0.0 221376  1884 ?        S    04:49   0:00  \_ sleep 900
+root         971  0.0  0.1 484896 29960 ?        Ssl  04:49   0:00 /usr/bin/python3 -Es /usr/sbin/tuned -l -P
+root        1140  0.0  0.0 172972  7656 ?        Ssl  04:49   0:00 /usr/sbin/rsyslogd -n
+root        1141  0.0  0.0  11816  7860 ?        Ss   04:49   0:00 sshd: /usr/sbin/sshd -D [listener] 0 of 10-100 startups
+root        2401  0.0  0.0  17596 11848 ?        Ss   04:50   0:00  \_ sshd-session: centos [priv]
+centos      2427  0.1  0.0  17996  7812 ?        S    04:50   0:00      \_ sshd-session: centos@pts/0
+centos      2428  0.3  0.0 225804  6652 pts/0    Ss+  04:50   0:01          \_ -bash
+centos      8175  0.0  0.0 223048  3760 pts/0    S+   04:56   0:00              \_ /bin/bash ./process_manager.sh --report
+centos      8198  0.0  0.0 226168  3888 pts/0    R+   04:56   0:00                  \_ ps auxf
+root        1157  0.0  0.0   4760  2572 ?        Ss   04:49   0:00 /usr/sbin/atd -f
+root        1158  0.0  0.0 224428  3604 ?        Ss   04:49   0:00 /usr/sbin/crond -n
+root        1159  0.0  0.0 453452  8748 ?        Ssl  04:49   0:00 /usr/sbin/gdm
+root        1822  0.0  0.0 389140 11604 ?        Sl   04:49   0:00  \_ gdm-session-worker [pam/gdm-launch-environment]
+gdm         1857  0.0  0.0 378020  6796 tty1     Ssl+ 04:49   0:00      \_ /usr/libexec/gdm-x-session --register-session dbus-run-session -- gnome-session --autostart /usr/share/gdm/greeter/autostart
+root        1860  0.3  0.4 2293648 73788 tty1    Sl+  04:49   0:01          \_ /usr/libexec/Xorg vt1 -displayfd 3 -auth /run/user/42/gdm/Xauthority -nolisten tcp -background none -noreset -keeptty -novtswitch -verbose 3
+gdm         1952  0.0  0.0   6504  2812 tty1     S+   04:49   0:00          \_ dbus-run-session -- gnome-session --autostart /usr/share/gdm/greeter/autostart
+gdm         1953  0.0  0.0  17772  7960 tty1     S+   04:49   0:00              \_ dbus-daemon --nofork --print-address 4 --session
+gdm         1954  0.0  0.1 808992 18468 tty1     Sl+  04:49   0:00              \_ /usr/libexec/gnome-session-binary --autostart /usr/share/gdm/greeter/autostart
+gdm         1990  0.8  1.4 4461828 234344 tty1   Sl+  04:49   0:03                  \_ /usr/bin/gnome-shell
+gdm         2013  0.0  0.0 527148 11404 tty1     Sl   04:50   0:00                  |   \_ ibus-daemon --panel disable --xim
+gdm         2016  0.0  0.0 449528  7084 tty1     Sl   04:50   0:00                  |       \_ /usr/libexec/ibus-dconf
+gdm         2254  0.0  0.0 375680  6920 tty1     Sl   04:50   0:00                  |       \_ /usr/libexec/ibus-engine-simple
+gdm         2111  0.0  0.0 679436 11036 tty1     Sl+  04:50   0:00                  \_ /usr/libexec/gsd-sharing
+gdm         2113  0.0  0.1 586812 20296 tty1     Sl+  04:50   0:00                  \_ /usr/libexec/gsd-wacom
+gdm         2116  0.0  0.1 810240 22448 tty1     Sl+  04:50   0:00                  \_ /usr/libexec/gsd-color
+gdm         2118  0.0  0.1 586236 20072 tty1     Sl+  04:50   0:00                  \_ /usr/libexec/gsd-keyboard
+gdm         2120  0.0  0.0 543564 13172 tty1     Sl+  04:50   0:00                  \_ /usr/libexec/gsd-print-notifications
+gdm         2121  0.0  0.0 670080  6476 tty1     Sl+  04:50   0:00                  \_ /usr/libexec/gsd-rfkill
+gdm         2125  0.0  0.0 604272 12316 tty1     Sl+  04:50   0:00                  \_ /usr/libexec/gsd-smartcard
+gdm         2129  0.0  0.1 596380 19336 tty1     Sl+  04:50   0:00                  \_ /usr/libexec/gsd-datetime
+gdm         2132  0.0  0.1 944516 23824 tty1     Sl+  04:50   0:00                  \_ /usr/libexec/gsd-media-keys
+gdm         2136  0.0  0.0 448472  5916 tty1     Sl+  04:50   0:00                  \_ /usr/libexec/gsd-screensaver-proxy
+gdm         2140  0.0  0.0 531024  9520 tty1     Sl+  04:50   0:00                  \_ /usr/libexec/gsd-sound
+gdm         2145  0.0  0.0 522596  6524 tty1     Sl+  04:50   0:00                  \_ /usr/libexec/gsd-a11y-settings
+gdm         2148  0.0  0.0 524952  7984 tty1     Sl+  04:50   0:00                  \_ /usr/libexec/gsd-housekeeping
+gdm         2166  0.0  0.1 735408 22168 tty1     Sl+  04:50   0:00                  \_ /usr/libexec/gsd-power
+gdm         1827  0.0  0.0  25128 15044 ?        Ss   04:49   0:00 /usr/lib/systemd/systemd --user
+gdm         1829  0.0  0.0 175880  8136 ?        S    04:49   0:00  \_ (sd-pam)
+gdm         1949  0.0  0.0  10520  4568 ?        Ss   04:49   0:00  \_ /usr/bin/dbus-broker-launch --scope user
+gdm         1950  0.0  0.0   4904  2688 ?        S    04:49   0:00  |   \_ dbus-broker --log 4 --controller 9 --machine-id ec203a0183603f3afb7903c5e1afeb36 --max-bytes 100000000000000 --max-fds 25000000000000 --max-matches 5000000000
+gdm         2042  0.0  0.0 319280 12192 ?        S<sl 04:50   0:00  \_ /usr/bin/pipewire
+gdm         2043  0.0  0.1 620152 16936 ?        S<sl 04:50   0:00  \_ /usr/bin/wireplumber
+gdm         2044  0.0  0.0 316860  9568 ?        S<sl 04:50   0:00  \_ /usr/bin/pipewire-pulse
+gdm         1960  0.0  0.0 308528  8100 tty1     Sl+  04:49   0:00 /usr/libexec/at-spi-bus-launcher
+gdm         1965  0.0  0.0  17336  7488 tty1     S+   04:49   0:00  \_ /usr/bin/dbus-daemon --config-file=/usr/share/defaults/at-spi2/accessibility.conf --nofork --print-address 3
+gdm         2019  0.0  0.1 439472 20752 tty1     Sl   04:50   0:00 /usr/libexec/ibus-x11 --kill-daemon
+gdm         2023  0.0  0.0 449472  7116 tty1     Sl+  04:50   0:00 /usr/libexec/ibus-portal
+gdm         2032  0.0  0.0 161776  8052 tty1     Sl+  04:50   0:00 /usr/libexec/at-spi2-registryd --use-gnome-session
+gdm         2036  0.0  0.0 448532  5948 tty1     Sl+  04:50   0:00 /usr/libexec/xdg-permission-store
+root        2041  0.0  0.1 483436 28272 ?        Ssl  04:50   0:00 /usr/bin/python3 -Es /usr/sbin/tuned-ppd -l
+root        2073  0.0  0.0  17432  6912 ?        Ss   04:50   0:00 /usr/sbin/wpa_supplicant -c /etc/wpa_supplicant/wpa_supplicant.conf -u -s
+gdm         2100  0.0  0.1 2858288 26152 tty1    Sl+  04:50   0:00 /usr/bin/gjs /usr/share/gnome-shell/org.gnome.Shell.Notifications
+gdm         2197  0.0  0.1 601204 20444 tty1     Sl+  04:50   0:00 /usr/libexec/gsd-printer
+colord      2225  0.0  0.0 530732 11896 ?        Ssl  04:50   0:00 /usr/libexec/colord
+gdm         2245  0.0  0.1 264016 28848 tty1     Sl+  04:50   0:00 /usr/libexec/dcv/dcvagentlauncher
+gdm         2272  0.9  0.7 1466908 116120 tty1   Sl+  04:50   0:03  \_ /usr/libexec/dcv/dcvagent --session-id console --mode system --settings-path /etc/dcv/dcv.conf --log-dir /var/log/dcv --log-level INFO --log-rotate-at-startup
+root        2288  0.0  0.0 222972  3388 ?        Ss   04:50   0:00 /usr/bin/bash /usr/bin/dcvsessionlauncher -d
+root        2292  0.0  0.0 200336 15656 ?        Sl   04:50   0:00  \_ /usr/libexec/dcv/dcvsessionlauncher
+gdm         2290  0.0  0.1 2866484 26116 tty1    Sl+  04:50   0:00 /usr/bin/gjs /usr/share/gnome-shell/org.gnome.ScreenSaver
+centos      2411  0.0  0.0  25132 14984 ?        Ss   04:50   0:00 /usr/lib/systemd/systemd --user
+centos      2413  0.0  0.0 177244  9348 ?        S    04:50   0:00  \_ (sd-pam)
+cwagent     3092  0.3  0.7 1452760 117008 ?      Ssl  04:50   0:01 /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent -config /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.toml -envconfig /opt/aws/amazon-cloudwatch-agent/etc/env-config.json -otelconfig /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.yaml -pidfile /opt/aws/amazon-cloudwatch-agent/var/amazon-cloudwatch-agent.pid
+centos      8025  0.2  0.0 310868 12472 pts/0    S+   04:56   0:00 curl --location https://cloudbot.alnafi.org/direct-log-hit --header X-API-Key: :Cl0MZ#/Zr4)Ap-r-3d%9,MJm!QWjW6H}[\^ --header Content-Type: application/x-www-form-urlencoded --data-urlencode filename=185449_hafizmuhammadsalman13_gmail_com_Lab-17_-Analyzing-Application-Performance-with-ps_lab_IP_34_234_82_134 --max-time 15 --silent --show-error --write-out \n[%{http_code}] API notification sent
+centos      8070  0.4  0.0 310868 12500 pts/0    S+   04:56   0:00 curl --location https://cloudbot.alnafi.org/direct-log-hit --header X-API-Key: :Cl0MZ#/Zr4)Ap-r-3d%9,MJm!QWjW6H}[\^ --header Content-Type: application/x-www-form-urlencoded --data-urlencode filename=185449_hafizmuhammadsalman13_gmail_com_Lab-17_-Analyzing-Application-Performance-with-ps_lab_IP_34_234_82_134 --max-time 15 --silent --show-error --write-out \n[%{http_code}] API notification sent
+centos      8115  0.3  0.0 310868 12452 pts/0    S+   04:56   0:00 curl --location https://cloudbot.alnafi.org/direct-log-hit --header X-API-Key: :Cl0MZ#/Zr4)Ap-r-3d%9,MJm!QWjW6H}[\^ --header Content-Type: application/x-www-form-urlencoded --data-urlencode filename=185449_hafizmuhammadsalman13_gmail_com_Lab-17_-Analyzing-Application-Performance-with-ps_lab_IP_34_234_82_134 --max-time 15 --silent --show-error --write-out \n[%{http_code}] API notification sent
+centos      8160  0.3  0.0 310868 12504 pts/0    S+   04:56   0:00 curl --location https://cloudbot.alnafi.org/direct-log-hit --header X-API-Key: :Cl0MZ#/Zr4)Ap-r-3d%9,MJm!QWjW6H}[\^ --header Content-Type: application/x-www-form-urlencoded --data-urlencode filename=185449_hafizmuhammadsalman13_gmail_com_Lab-17_-Analyzing-Application-Performance-with-ps_lab_IP_34_234_82_134 --max-time 15 --silent --show-error --write-out \n[%{http_code}] API notification sent

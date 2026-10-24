@@ -1,0 +1,63 @@
+=== SYSTEM PERFORMANCE BASELINE ===
+Date: Sat Oct 24 04:58:24 UTC 2026
+Hostname: ip-172-31-10-212.ec2.internal
+
+=== SYSTEM INFORMATION ===
+Kernel: 5.14.0-654.el9.x86_64
+CPU Info: AMD EPYC 7571
+CPU Cores: 4
+Total Memory: 15Gi
+
+=== CURRENT LOAD ===
+ 04:58:24 up 8 min,  1 user,  load average: 0.21, 0.53, 0.31
+
+=== MEMORY USAGE ===
+               total        used        free      shared  buff/cache   available
+Mem:            15Gi       959Mi        13Gi        19Mi       648Mi        14Gi
+Swap:             0B          0B          0B
+
+=== PROCESS STATISTICS ===
+Total processes: 194
+Running: 0
+Sleeping: 125
+Stopped: 0
+Zombie: 0
+
+=== TOP 10 PROCESSES BY CPU ===
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+gdm         2272  0.9  0.7 1466908 116120 tty1   Sl+  04:50   0:04 /usr/libexec/dcv/dcvagent --session-id console --mode system --settings-path /etc/dcv/dcv.conf --log-dir /var/log/dcv --log-level INFO --log-rotate-at-startup
+dcv          832  0.8  0.3 885136 52792 ?        Sl   04:49   0:04 /usr/libexec/dcv/dcvserver --service
+gdm         1990  0.6  1.4 4461828 234332 tty1   Sl+  04:49   0:03 /usr/bin/gnome-shell
+root           1  0.5  0.1 175984 18520 ?        Ss   04:49   0:02 /usr/lib/systemd/systemd --switched-root --system --deserialize 28
+root        1860  0.3  0.4 2293648 73788 tty1    Sl+  04:49   0:01 /usr/libexec/Xorg vt1 -displayfd 3 -auth /run/user/42/gdm/Xauthority -nolisten tcp -background none -noreset -keeptty -novtswitch -verbose 3
+centos      2428  0.3  0.0 225804  6656 pts/0    Ss+  04:50   0:01 -bash
+cwagent     3092  0.3  0.7 1452760 117304 ?      Ssl  04:50   0:01 /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent -config /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.toml -envconfig /opt/aws/amazon-cloudwatch-agent/etc/env-config.json -otelconfig /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.yaml -pidfile /opt/aws/amazon-cloudwatch-agent/var/amazon-cloudwatch-agent.pid
+root          10  0.2  0.0      0     0 ?        I    04:49   0:01 [kworker/u16:0-events_unbound]
+centos      9228  0.2  0.0 310868 12504 pts/0    S+   04:58   0:00 curl --location https://cloudbot.alnafi.org/direct-log-hit --header X-API-Key: :Cl0MZ#/Zr4)Ap-r-3d%9,MJm!QWjW6H}[\^ --header Content-Type: application/x-www-form-urlencoded --data-urlencode filename=185449_hafizmuhammadsalman13_gmail_com_Lab-17_-Analyzing-Application-Performance-with-ps_lab_IP_34_234_82_134 --max-time 15 --silent --show-error --write-out \n[%{http_code}] API notification sent
+centos      9273  0.2  0.0 310868 12568 pts/0    S+   04:58   0:00 curl --location https://cloudbot.alnafi.org/direct-log-hit --header X-API-Key: :Cl0MZ#/Zr4)Ap-r-3d%9,MJm!QWjW6H}[\^ --header Content-Type: application/x-www-form-urlencoded --data-urlencode filename=185449_hafizmuhammadsalman13_gmail_com_Lab-17_-Analyzing-Application-Performance-with-ps_lab_IP_34_234_82_134 --max-time 15 --silent --show-error --write-out \n[%{http_code}] API notification sent
+
+=== TOP 10 PROCESSES BY MEMORY ===
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+gdm         1990  0.6  1.4 4461828 234332 tty1   Sl+  04:49   0:03 /usr/bin/gnome-shell
+cwagent     3092  0.3  0.7 1452760 117304 ?      Ssl  04:50   0:01 /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent -config /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.toml -envconfig /opt/aws/amazon-cloudwatch-agent/etc/env-config.json -otelconfig /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.yaml -pidfile /opt/aws/amazon-cloudwatch-agent/var/amazon-cloudwatch-agent.pid
+gdm         2272  0.9  0.7 1466908 116120 tty1   Sl+  04:50   0:04 /usr/libexec/dcv/dcvagent --session-id console --mode system --settings-path /etc/dcv/dcv.conf --log-dir /var/log/dcv --log-level INFO --log-rotate-at-startup
+root        1860  0.3  0.4 2293648 73788 tty1    Sl+  04:49   0:01 /usr/libexec/Xorg vt1 -displayfd 3 -auth /run/user/42/gdm/Xauthority -nolisten tcp -background none -noreset -keeptty -novtswitch -verbose 3
+dcv          832  0.8  0.3 885136 52792 ?        Sl   04:49   0:04 /usr/libexec/dcv/dcvserver --service
+root         801  0.1  0.2 354548 46148 ?        Ssl  04:49   0:00 /usr/bin/python3 -s /usr/sbin/firewalld --nofork --nopid
+root         971  0.0  0.1 484896 29960 ?        Ssl  04:49   0:00 /usr/bin/python3 -Es /usr/sbin/tuned -l -P
+gdm         2245  0.0  0.1 264016 28848 tty1     Sl+  04:50   0:00 /usr/libexec/dcv/dcvagentlauncher
+root        2041  0.0  0.1 483436 28272 ?        Ssl  04:50   0:00 /usr/bin/python3 -Es /usr/sbin/tuned-ppd -l
+gdm         2290  0.0  0.1 2866484 26116 tty1    Sl+  04:50   0:00 /usr/bin/gjs /usr/share/gnome-shell/org.gnome.ScreenSaver
+
+=== PROCESS COUNT BY USER ===
+root       132
+gdm        40
+centos     11
+dcv        2
+dbus       2
+rtkit      1
+polkitd    1
+libstor+   1
+cwagent    1
+colord     1
+chrony     1

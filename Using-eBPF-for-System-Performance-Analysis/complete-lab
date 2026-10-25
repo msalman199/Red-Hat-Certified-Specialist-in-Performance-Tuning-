@@ -1,0 +1,552 @@
+Lab 19: Using eBPF for System Performance Analysis
+Objectives
+By the end of this lab, students will be able to:
+
+Understand the fundamentals of eBPF (Extended Berkeley Packet Filter) technology
+Install and configure eBPF tools for system performance monitoring
+Use syscount to trace and analyze system calls in real-time
+Implement gethostlatency to measure DNS resolution latency
+Build a Python report generator that consolidates eBPF tool output into actionable findings
+Prerequisites
+Before starting this lab, students should have:
+
+Basic understanding of Linux system administration
+Familiarity with the command-line interface and shell scripting
+Knowledge of system calls and kernel concepts
+Understanding of network protocols and DNS resolution
+Root or sudo access to a Linux system with kernel 4.1+ (5.4+ recommended)
+Ready-to-Use Cloud Machines: Al Nafi provides pre-configured Linux-based cloud machines for this lab. Simply click Start Lab to access your dedicated environment - no need to build your own VM.
+
+Install the required tools before starting Task 1:
+
+Ubuntu/Debian:
+
+sudo apt update
+sudo apt install -y bpfcc-tools linux-headers-$(uname -r) python3-bpfcc libbpfcc-dev dnsutils
+CentOS/RHEL/CentOS Stream:
+
+sudo dnf install -y epel-release
+sudo dnf install -y bcc-tools kernel-devel-$(uname -r) python3-bcc bind-utils
+Confirm Python 3 is available (used only for the standard library, no third-party packages are required):
+
+python3 --version
+Task 1: Trace System Calls with syscount
+Subtask 1.1: Verify the Environment and Run a Baseline Trace
+Check kernel compatibility and confirm the tool is installed.
+
+uname -r
+mount | grep debugfs || sudo mount -t debugfs debugfs /sys/kernel/debug
+which syscount.py 2>/dev/null || ls /usr/share/bcc/tools/syscount.py
+Run a 10-second baseline trace of all system calls on the machine:
+
+sudo /usr/share/bcc/tools/syscount.py -d 10 | tee syscount_baseline.txt
+Deliverable: A file named syscount_baseline.txt in your working directory containing a table with SYSCALL and COUNT columns and at least one row of data.
+
+Expected result: The terminal (and file) shows output similar to:
+
+Tracing syscalls, printing top 10... Ctrl+C to quit
+[09:15:32]
+SYSCALL                 COUNT
+futex                     412
+epoll_wait                301
+read                      145
+write                      98
+...
+Subtask 1.2: Generate Workload and Capture Detailed Counts
+Create a workload script that produces file, process, and network system call activity.
+
+cat > test_workload.sh << 'EOF'
+#!/bin/bash
+echo "Starting test workload..."
+
+for i in {1..100}; do
+    echo "Test data $i" > /tmp/test_file_$i.txt
+    cat /tmp/test_file_$i.txt > /dev/null
+    rm /tmp/test_file_$i.txt
+done
+
+ping -c 5 8.8.8.8 > /dev/null 2>&1
+
+ps aux > /dev/null
+ls -la /proc/ > /dev/null
+
+echo "Test workload completed"
+EOF
+
+chmod +x test_workload.sh
+Run syscount per-process while the workload executes, and save the output:
+
+sudo /usr/share/bcc/tools/syscount.py -P -d 20 > syscount_output.txt &
+SYSCOUNT_PID=$!
+
+sleep 2
+./test_workload.sh
+
+wait $SYSCOUNT_PID
+cat syscount_output.txt
+Now build a Python analyzer that parses the captured output and reports the top syscalls, total count, and the proportion of I/O versus network activity.
+
+cat > analyze_syscalls.py << 'EOF'
+#!/usr/bin/env python3
+import sys
+
+def analyze_syscount_output(filename):
+    print("=== System Call Analysis ===")
+
+    with open(filename, 'r') as f:
+        lines = f.readlines()
+
+    summary_started = False
+    syscalls = []
+
+    for line in lines:
+        if "SYSCALL" in line and "COUNT" in line:
+            summary_started = True
+            continue
+
+        if summary_started and line.strip():
+            parts = line.strip().split()
+            if len(parts) >= 2:
+                try:
+                    count = int(parts[1])
+                    syscall = parts[0]
+                    syscalls.append((syscall, count))
+                except ValueError:
+                    continue
+
+    if not syscalls:
+        print("No syscall data found. Ensure syscount ran and produced output.")
+        return
+
+    syscalls.sort(key=lambda x: x[1], reverse=True)
+
+    print("Top 10 System Calls:")
+    print(f"{'Syscall':<15} {'Count':<10} {'Percentage':<10}")
+    print("-" * 35)
+
+    total_calls = sum(count for _, count in syscalls)
+
+    for syscall, count in syscalls[:10]:
+        percentage = (count / total_calls) * 100 if total_calls > 0 else 0
+        print(f"{syscall:<15} {count:<10} {percentage:.2f}%")
+
+    print(f"\nTotal system calls: {total_calls}")
+
+    print("\n=== Performance Insights ===")
+    high_io_calls = ['read', 'write', 'open', 'close', 'stat', 'fstat']
+    network_calls = ['socket', 'connect', 'sendto', 'recvfrom']
+
+    io_total = sum(count for syscall, count in syscalls if syscall in high_io_calls)
+    network_total = sum(count for syscall, count in syscalls if syscall in network_calls)
+
+    print(f"I/O related calls: {io_total} ({(io_total / total_calls) * 100:.2f}%)")
+    print(f"Network related calls: {network_total} ({(network_total / total_calls) * 100:.2f}%)")
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: python3 analyze_syscalls.py <syscount_output_file>")
+        sys.exit(1)
+
+    analyze_syscount_output(sys.argv[1])
+EOF
+
+chmod +x analyze_syscalls.py
+python3 analyze_syscalls.py syscount_output.txt
+Deliverable: Console output from analyze_syscalls.py listing the top 10 syscalls with percentages, a total call count, and an I/O versus network breakdown.
+
+Expected result: A formatted table is printed, followed by a Total system calls: line and a Performance Insights section showing two percentages that sum to less than or equal to 100 percent of total calls.
+
+Task 2: Measure DNS Resolution Latency with gethostlatency
+Subtask 2.1: Capture DNS Latency Data
+Confirm the tool exists and start it in the background so it captures activity from the next step.
+
+ls /usr/share/bcc/tools/gethostlatency.py
+
+sudo /usr/share/bcc/tools/gethostlatency.py -t > dns_latency.log &
+GETHOSTLATENCY_PID=$!
+sleep 2
+Generate DNS resolution traffic against a mix of real domains, using multiple resolver utilities:
+
+cat > dns_test.sh << 'EOF'
+#!/bin/bash
+echo "Starting DNS resolution tests..."
+
+websites=(
+    "google.com"
+    "github.com"
+    "stackoverflow.com"
+    "redhat.com"
+    "ubuntu.com"
+    "kernel.org"
+    "python.org"
+    "nginx.org"
+    "apache.org"
+    "cloudflare.com"
+)
+
+for site in "${websites[@]}"; do
+    echo "Resolving $site..."
+    nslookup "$site" > /dev/null 2>&1
+    host "$site" > /dev/null 2>&1
+    dig "$site" > /dev/null 2>&1
+    sleep 1
+done
+
+echo "DNS tests completed"
+EOF
+
+chmod +x dns_test.sh
+./dns_test.sh
+
+sleep 3
+sudo kill "$GETHOSTLATENCY_PID" 2>/dev/null
+cat dns_latency.log
+Deliverable: A non-empty dns_latency.log file containing timestamped rows with process ID, command name, resolved host, and latency in milliseconds.
+
+Expected result: Each line resembles:
+
+TIME     PID    COMM               LATms HOST
+14:02:11 8842   nslookup           12.44 google.com
+14:02:13 8855   host               45.02 github.com
+Subtask 2.2: Build a DNS Latency Analyzer
+Write a Python script that parses dns_latency.log, computes statistics, and flags slow resolutions.
+
+cat > analyze_dns_latency.py << 'EOF'
+#!/usr/bin/env python3
+import sys
+import re
+from collections import defaultdict
+import statistics
+
+def parse_gethostlatency_output(filename):
+    print("=== DNS Latency Analysis ===")
+
+    latencies = []
+    host_latencies = defaultdict(list)
+    pid_latencies = defaultdict(list)
+
+    with open(filename, 'r') as f:
+        for line in f:
+            match = re.search(r'(\d+:\d+:\d+)\s+(\d+)\s+(\S+)\s+([\d.]+)\s+(\S+)', line)
+            if match:
+                _, pid, comm, latency, host = match.groups()
+                latency_ms = float(latency)
+
+                latencies.append(latency_ms)
+                host_latencies[host].append(latency_ms)
+                pid_latencies[f"{pid}({comm})"].append(latency_ms)
+
+    if not latencies:
+        print("No DNS latency data found in the file.")
+        return
+
+    print(f"Total DNS resolutions: {len(latencies)}")
+    print(f"Average latency: {statistics.mean(latencies):.2f} ms")
+    print(f"Median latency: {statistics.median(latencies):.2f} ms")
+    print(f"Min latency: {min(latencies):.2f} ms")
+    print(f"Max latency: {max(latencies):.2f} ms")
+
+    if len(latencies) > 1:
+        print(f"Standard deviation: {statistics.stdev(latencies):.2f} ms")
+
+    print("\n=== Latency Distribution ===")
+    ranges = [(0, 10), (10, 50), (50, 100), (100, 500), (500, float('inf'))]
+    range_labels = ["0-10ms", "10-50ms", "50-100ms", "100-500ms", ">500ms"]
+
+    for (min_lat, max_lat), label in zip(ranges, range_labels):
+        count = sum(1 for lat in latencies if min_lat <= lat < max_lat)
+        percentage = (count / len(latencies)) * 100
+        print(f"{label:<10}: {count:>3} ({percentage:>5.1f}%)")
+
+    print("\n=== Slowest Hosts (Average Latency) ===")
+    host_avg_latencies = [(host, statistics.mean(lats)) for host, lats in host_latencies.items()]
+    host_avg_latencies.sort(key=lambda x: x[1], reverse=True)
+
+    for host, avg_lat in host_avg_latencies[:10]:
+        count = len(host_latencies[host])
+        print(f"{host:<25}: {avg_lat:>6.2f} ms (n={count})")
+
+    print("\n=== Process DNS Activity ===")
+    pid_sorted = sorted(pid_latencies.items(), key=lambda x: len(x[1]), reverse=True)
+
+    for pid_comm, lats in pid_sorted[:5]:
+        avg_lat = statistics.mean(lats)
+        print(f"{pid_comm:<20}: {len(lats):>3} lookups, avg {avg_lat:>6.2f} ms")
+
+    print("\n=== Performance Warnings ===")
+    slow_resolutions = [lat for lat in latencies if lat > 100]
+    if slow_resolutions:
+        print(f"WARNING: {len(slow_resolutions)} DNS resolutions took >100ms")
+        print(f"Slowest resolution: {max(slow_resolutions):.2f} ms")
+    else:
+        print("All DNS resolutions completed in reasonable time")
+
+    very_slow_resolutions = [lat for lat in latencies if lat > 500]
+    if very_slow_resolutions:
+        print(f"CRITICAL: {len(very_slow_resolutions)} DNS resolutions took >500ms")
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: python3 analyze_dns_latency.py <gethostlatency_output_file>")
+        sys.exit(1)
+
+    parse_gethostlatency_output(sys.argv[1])
+EOF
+
+chmod +x analyze_dns_latency.py
+python3 analyze_dns_latency.py dns_latency.log
+Deliverable: Console output from analyze_dns_latency.py showing total resolutions, average/median/min/max latency, a distribution table, the top slowest hosts, and a performance warnings section.
+
+Expected result: All ten test domains appear somewhere in the "Slowest Hosts" listing (fewer if the tool captured fewer than ten unique lookups), and the warnings section prints either a WARNING/CRITICAL line or the "All DNS resolutions completed in reasonable time" message.
+
+Task 3: Build a Consolidated Performance Report
+Subtask 3.1: Collect Combined Monitoring Data
+Run syscount and gethostlatency together for 30 seconds while replaying both workloads, to produce the two input files the report generator needs.
+
+sudo /usr/share/bcc/tools/syscount.py -P -d 30 > syscount_output.txt &
+SYSCOUNT_PID=$!
+
+sudo /usr/share/bcc/tools/gethostlatency.py -t > dns_latency.log &
+GETHOSTLATENCY_PID=$!
+
+sleep 2
+./test_workload.sh
+./dns_test.sh
+
+wait $SYSCOUNT_PID
+sudo kill "$GETHOSTLATENCY_PID" 2>/dev/null
+
+ls -la syscount_output.txt dns_latency.log
+Deliverable: Two populated files, syscount_output.txt and dns_latency.log, both with non-zero size, confirmed with ls -la.
+
+Subtask 3.2: Generate the JSON Performance Report
+Create the full report generator. It reads both capture files, computes summary statistics, flags issues, generates recommendations, and writes a JSON report to disk.
+
+cat > generate_performance_report.py << 'EOF'
+#!/usr/bin/env python3
+import os
+import sys
+import json
+import statistics
+from datetime import datetime
+from collections import defaultdict
+import re
+
+
+class PerformanceReportGenerator:
+    def __init__(self):
+        self.report = {
+            'timestamp': datetime.now().isoformat(),
+            'system_calls': {},
+            'dns_performance': {},
+            'performance_issues': [],
+            'recommendations': []
+        }
+
+    def analyze_syscount_data(self, filename):
+        """Analyze syscount output file"""
+        if not os.path.exists(filename):
+            print(f"Warning: {filename} not found, skipping syscall analysis")
+            return
+
+        print(f"Analyzing system call data from {filename}...")
+
+        with open(filename, 'r') as f:
+            content = f.read()
+
+        syscalls = {}
+        for line in content.split('\n'):
+            if line.strip() and not line.strip().startswith('SYSCALL') and not line.startswith('Tracing') and not line.startswith('['):
+                parts = line.strip().split()
+                if len(parts) >= 2:
+                    try:
+                        syscall = parts[0]
+                        count = int(parts[1])
+                        syscalls[syscall] = syscalls.get(syscall, 0) + count
+                    except (ValueError, IndexError):
+                        continue
+
+        if not syscalls:
+            return
+
+        self.report['system_calls'] = {
+            'total_calls': sum(syscalls.values()),
+            'unique_syscalls': len(syscalls),
+            'top_syscalls': dict(sorted(syscalls.items(), key=lambda x: x[1], reverse=True)[:10])
+        }
+
+        io_calls = sum(count for syscall, count in syscalls.items()
+                        if syscall in ['read', 'write', 'open', 'close', 'stat', 'fstat'])
+
+        if io_calls > 10000:
+            self.report['performance_issues'].append({
+                'type': 'high_io',
+                'description': f'High I/O activity detected: {io_calls} I/O system calls',
+                'severity': 'medium'
+            })
+
+    def analyze_dns_latency_data(self, filename):
+        """Analyze gethostlatency output file"""
+        if not os.path.exists(filename):
+            print(f"Warning: {filename} not found, skipping DNS analysis")
+            return
+
+        print(f"Analyzing DNS latency data from {filename}...")
+
+        latencies = []
+        hosts = defaultdict(list)
+
+        with open(filename, 'r') as f:
+            for line in f:
+                match = re.search(r'(\d+:\d+:\d+)\s+(\d+)\s+(\S+)\s+([\d.]+)\s+(\S+)', line)
+                if match:
+                    _, _, _, latency, host = match.groups()
+                    latency_val = float(latency)
+                    latencies.append(latency_val)
+                    hosts[host].append(latency_val)
+
+        if not latencies:
+            return
+
+        avg_latency = statistics.mean(latencies)
+
+        self.report['dns_performance'] = {
+            'total_queries': len(latencies),
+            'average_latency': avg_latency,
+            'median_latency': statistics.median(latencies),
+            'max_latency': max(latencies),
+            'min_latency': min(latencies),
+            'slow_queries_count': len([l for l in latencies if l > 100]),
+            'hosts_queried': len(hosts)
+        }
+
+        slow_queries = [l for l in latencies if l > 100]
+        if slow_queries:
+            self.report['performance_issues'].append({
+                'type': 'slow_dns',
+                'description': f'{len(slow_queries)} DNS queries took >100ms',
+                'severity': 'medium' if len(slow_queries) < 10 else 'high'
+            })
+
+        very_slow_queries = [l for l in latencies if l > 500]
+        if very_slow_queries:
+            self.report['performance_issues'].append({
+                'type': 'very_slow_dns',
+                'description': f'{len(very_slow_queries)} DNS queries took >500ms',
+                'severity': 'high'
+            })
+
+    def generate_recommendations(self):
+        """Generate performance recommendations based on analysis"""
+        recommendations = []
+
+        if self.report['system_calls']:
+            total_calls = self.report['system_calls'].get('total_calls', 0)
+            if total_calls > 50000:
+                recommendations.append({
+                    'category': 'system_calls',
+                    'recommendation': 'Consider optimizing application to reduce system call frequency, for example by buffering I/O or batching operations',
+                    'priority': 'medium'
+                })
+
+            top_syscalls = self.report['system_calls'].get('top_syscalls', {})
+            if top_syscalls.get('futex', 0) > 5000:
+                recommendations.append({
+                    'category': 'system_calls',
+                    'recommendation': 'High futex counts suggest lock contention; profile thread synchronization',
+                    'priority': 'medium'
+                })
+
+        if self.report['dns_performance']:
+            avg_latency = self.report['dns_performance'].get('average_latency', 0)
+            if avg_latency > 100:
+                recommendations.append({
+                    'category': 'dns',
+                    'recommendation': 'Average DNS latency exceeds 100ms; consider a local caching resolver such as systemd-resolved or dnsmasq',
+                    'priority': 'high'
+                })
+            elif avg_latency > 50:
+                recommendations.append({
+                    'category': 'dns',
+                    'recommendation': 'DNS latency is moderate; monitor trends and verify resolver configuration',
+                    'priority': 'low'
+                })
+
+            slow_count = self.report['dns_performance'].get('slow_queries_count', 0)
+            if slow_count > 0:
+                recommendations.append({
+                    'category': 'dns',
+                    'recommendation': 'Investigate specific hosts with repeated slow resolutions for upstream DNS or network path issues',
+                    'priority': 'medium'
+                })
+
+        if not recommendations:
+            recommendations.append({
+                'category': 'general',
+                'recommendation': 'No significant performance issues detected during this monitoring window',
+                'priority': 'info'
+            })
+
+        self.report['recommendations'] = recommendations
+
+    def save_report(self, output_file='performance_report.json'):
+        with open(output_file, 'w') as f:
+            json.dump(self.report, f, indent=2)
+        print(f"\nReport saved to {output_file}")
+
+    def print_summary(self):
+        print("\n=== Performance Report Summary ===")
+        print(f"Generated: {self.report['timestamp']}")
+
+        if self.report['system_calls']:
+            print(f"\nTotal system calls: {self.report['system_calls'].get('total_calls', 0)}")
+            print(f"Unique syscalls: {self.report['system_calls'].get('unique_syscalls', 0)}")
+
+        if self.report['dns_performance']:
+            print(f"\nTotal DNS queries: {self.report['dns_performance'].get('total_queries', 0)}")
+            print(f"Average DNS latency: {self.report['dns_performance'].get('average_latency', 0):.2f} ms")
+
+        print(f"\nPerformance issues found: {len(self.report['performance_issues'])}")
+        for issue in self.report['performance_issues']:
+            print(f"  [{issue['severity'].upper()}] {issue['description']}")
+
+        print(f"\nRecommendations: {len(self.report['recommendations'])}")
+        for rec in self.report['recommendations']:
+            print(f"  [{rec['priority'].upper()}] {rec['recommendation']}")
+
+
+def main():
+    if len(sys.argv) != 3:
+        print("Usage: python3 generate_performance_report.py <syscount_output_file> <gethostlatency_output_file>")
+        sys.exit(1)
+
+    syscount_file = sys.argv[1]
+    dns_file = sys.argv[2]
+
+    generator = PerformanceReportGenerator()
+    generator.analyze_syscount_data(syscount_file)
+    generator.analyze_dns_latency_data(dns_file)
+    generator.generate_recommendations()
+    generator.print_summary()
+    generator.save_report('performance_report.json')
+
+
+if __name__ == "__main__":
+    main()
+EOF
+
+chmod +x generate_performance_report.py
+python3 generate_performance_report.py syscount_output.txt dns_latency.log
+Validate that the generated JSON is well-formed:
+
+python3 -m json.tool performance_report.json
+Deliverable: A performance_report.json file in the working directory containing the keys timestamp, system_calls, dns_performance, performance_issues, and recommendations, plus a clean console printout from python3 -m json.tool performance_report.json with no error output.
+
+Expected result: The json.tool command pretty-prints the entire report back to the terminal without raising a json.decoder.JSONDecodeError. The console summary printed by the script shows non-zero total system calls, a DNS average latency value, and at least one entry under recommendations (either an actionable recommendation or the informational "No significant performance issues detected" message).
+
+Expected Outcomes
+A working eBPF-based tracing pipeline using syscount and gethostlatency that captures live kernel-level activity into text logs
+Two purpose-built Python analyzers (analyze_syscalls.py, analyze_dns_latency.py) that turn raw eBPF trace output into readable statistics and performance warnings
+A consolidated performance_report.json produced by generate_performance_report.py, combining syscall and DNS metrics into a single machine-readable artifact with concrete recommendations
+Conclusion
+In this lab, students used eBPF-based tracing tools, syscount and gethostlatency, to observe live kernel-level activity, including system call frequency and DNS resolution latency, without modifying or recompiling any application code. Working through the tasks demonstrated how raw eBPF trace output can be captured into log files, parsed with Python, and turned into structured statistics that highlight concrete issues such as excessive I/O system calls or slow DNS lookups. The final performance report generator showed how these two independent data sources can be merged into a single JSON artifact with severity-ranked issues and prioritized recommendations, a pattern directly applicable to production incident response and capacity planning. Students who want to go further should explore additional BCC tools such as opensnoop, execsnoop, and biolatency, integrate this reporting pipeline into a scheduled monitoring job, and experiment with writing custom eBPF programs using the bcc Python bindings to trace application-specific code paths.

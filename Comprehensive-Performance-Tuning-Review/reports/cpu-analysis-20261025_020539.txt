@@ -1,0 +1,80 @@
+=== CPU Performance Analysis Report ===
+Generated on: Sun Oct 25 02:05:39 UTC 2026
+
+1. Current CPU Information:
+Architecture:                            x86_64
+CPU op-mode(s):                          32-bit, 64-bit
+Address sizes:                           48 bits physical, 48 bits virtual
+Byte Order:                              Little Endian
+CPU(s):                                  4
+On-line CPU(s) list:                     0-3
+Vendor ID:                               AuthenticAMD
+BIOS Vendor ID:                          Advanced Micro Devices, Inc.
+Model name:                              AMD EPYC 7571
+BIOS Model name:                         AMD EPYC 7571
+CPU family:                              23
+Model:                                   1
+Thread(s) per core:                      2
+Core(s) per socket:                      2
+Socket(s):                               1
+Stepping:                                2
+BogoMIPS:                                4399.98
+Flags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm constant_tsc rep_good nopl nonstop_tsc cpuid extd_apicid tsc_known_freq pni pclmulqdq ssse3 fma cx16 sse4_1 sse4_2 movbe popcnt aes xsave avx f16c rdrand hypervisor lahf_lm cmp_legacy cr8_legacy abm sse4a misalignsse 3dnowprefetch topoext vmmcall fsgsbase bmi1 avx2 smep bmi2 rdseed adx smap clflushopt sha_ni xsaveopt xsavec xgetbv1 clzero xsaveerptr arat npt nrip_save
+Hypervisor vendor:                       KVM
+Virtualization type:                     full
+L1d cache:                               64 KiB (2 instances)
+L1i cache:                               128 KiB (2 instances)
+L2 cache:                                1 MiB (2 instances)
+L3 cache:                                8 MiB (1 instance)
+NUMA node(s):                            1
+NUMA node0 CPU(s):                       0-3
+Vulnerability Gather data sampling:      Not affected
+Vulnerability Indirect target selection: Not affected
+Vulnerability Itlb multihit:             Not affected
+Vulnerability L1tf:                      Not affected
+Vulnerability Mds:                       Not affected
+Vulnerability Meltdown:                  Not affected
+Vulnerability Mmio stale data:           Not affected
+Vulnerability Reg file data sampling:    Not affected
+Vulnerability Retbleed:                  Mitigation; untrained return thunk; SMT vulnerable
+Vulnerability Spec rstack overflow:      Vulnerable: Safe RET, no microcode
+Vulnerability Spec store bypass:         Vulnerable
+Vulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization
+Vulnerability Spectre v2:                Mitigation; Retpolines; STIBP disabled; RSB filling; PBRSB-eIBRS Not affected; BHI Not affected
+Vulnerability Srbds:                     Not affected
+Vulnerability Tsa:                       Not affected
+Vulnerability Tsx async abort:           Not affected
+Vulnerability Vmscape:                   Not affected
+
+2. Current Load Average:
+ 02:05:39 up 4 min,  1 user,  load average: 0.08, 0.17, 0.09
+
+3. CPU Utilization Summary (last 24 hours):
+Linux 5.14.0-654.el9.x86_64 (ip-172-31-15-216.ec2.internal) 	10/25/26 	_x86_64_	(4 CPU)
+
+02:01:19     LINUX RESTART	(4 CPU)
+
+4. Top CPU Consuming Processes:
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+gdm         1987  1.3  1.4 4396880 234436 tty1   Sl+  02:01   0:03 /usr/bin/gnome-shell
+root           1  1.1  0.1 175844 18512 ?        Ss   02:01   0:02 /usr/lib/systemd/systemd --switched-root --system --deserialize 28
+gdm         2266  1.0  0.7 1466912 116264 tty1   Sl+  02:01   0:02 /usr/libexec/dcv/dcvagent --session-id console --mode system --settings-path /etc/dcv/dcv.conf --log-dir /var/log/dcv --log-level INFO --log-rotate-at-startup
+dcv          832  0.9  0.3 811244 52352 ?        Sl   02:01   0:02 /usr/libexec/dcv/dcvserver --service
+root          12  0.5  0.0      0     0 ?        I    02:01   0:01 [kworker/u16:1-events_unbound]
+root        1839  0.5  0.4 2293668 75516 tty1    Sl+  02:01   0:01 /usr/libexec/Xorg vt1 -displayfd 3 -auth /run/user/42/gdm/Xauthority -nolisten tcp -background none -noreset -keeptty -novtswitch -verbose 3
+root         799  0.3  0.2 354544 45356 ?        Ssl  02:01   0:00 /usr/bin/python3 -s /usr/sbin/firewalld --nofork --nopid
+cwagent     2926  0.3  0.7 1452760 119560 ?      Ssl  02:02   0:00 /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent -config /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.toml -envconfig /opt/aws/amazon-cloudwatch-agent/etc/env-config.json -otelconfig /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.yaml -pidfile /opt/aws/amazon-cloudwatch-agent/var/amazon-cloudwatch-agent.pid
+root          17  0.2  0.0      0     0 ?        S<   02:01   0:00 [pr/ttyS0]
+root        2995  0.2  0.0 225092  6004 pts/0    S+   02:03   0:00 -bash
+root          27  0.1  0.0      0     0 ?        S    02:01   0:00 [migration/1]
+root          33  0.1  0.0      0     0 ?        S    02:01   0:00 [migration/2]
+root          39  0.1  0.0      0     0 ?        S    02:01   0:00 [migration/3]
+root         685  0.1  0.0  28712 11744 ?        Ss   02:01   0:00 /usr/lib/systemd/systemd-journald
+dbus         794  0.1  0.0   7020  4800 ?        S    02:01   0:00 dbus-broker --log 4 --controller 9 --machine-id ec203a0183603f3afb7903c5e1afeb36 --max-bytes 536870912 --max-fds 4096 --max-matches 131072 --audit
+polkitd      838  0.1  0.1 2715300 25864 ?       Ssl  02:01   0:00 /usr/lib/polkit-1/polkitd --no-debug
+root         971  0.1  0.1 484896 30052 ?        Ssl  02:01   0:00 /usr/bin/python3 -Es /usr/sbin/tuned -l -P
+root        1135  0.1  0.0 173232  7648 ?        Ssl  02:01   0:00 /usr/sbin/rsyslogd -n
+root           2  0.0  0.0      0     0 ?        S    02:01   0:00 [kthreadd]
+
+5. CPU Performance Recommendations:
+- CPU load is within acceptable range

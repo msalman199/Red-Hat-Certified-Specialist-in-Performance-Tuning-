@@ -1,0 +1,20 @@
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+gdm         1987  1.3  1.4 4396880 234436 tty1   Sl+  02:01   0:03 /usr/bin/gnome-shell
+root           1  1.1  0.1 175844 18512 ?        Ss   02:01   0:02 /usr/lib/systemd/systemd --switched-root --system --deserialize 28
+gdm         2266  1.0  0.7 1466912 116264 tty1   Sl+  02:01   0:02 /usr/libexec/dcv/dcvagent --session-id console --mode system --settings-path /etc/dcv/dcv.conf --log-dir /var/log/dcv --log-level INFO --log-rotate-at-startup
+dcv          832  0.9  0.3 811244 52352 ?        Sl   02:01   0:02 /usr/libexec/dcv/dcvserver --service
+root          12  0.5  0.0      0     0 ?        I    02:01   0:01 [kworker/u16:1-events_unbound]
+root        1839  0.5  0.4 2293668 75516 tty1    Sl+  02:01   0:01 /usr/libexec/Xorg vt1 -displayfd 3 -auth /run/user/42/gdm/Xauthority -nolisten tcp -background none -noreset -keeptty -novtswitch -verbose 3
+root         799  0.3  0.2 354544 45356 ?        Ssl  02:01   0:00 /usr/bin/python3 -s /usr/sbin/firewalld --nofork --nopid
+cwagent     2926  0.3  0.7 1452760 119560 ?      Ssl  02:02   0:00 /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent -config /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.toml -envconfig /opt/aws/amazon-cloudwatch-agent/etc/env-config.json -otelconfig /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.yaml -pidfile /opt/aws/amazon-cloudwatch-agent/var/amazon-cloudwatch-agent.pid
+root          17  0.2  0.0      0     0 ?        S<   02:01   0:00 [pr/ttyS0]
+root        2995  0.2  0.0 225092  6004 pts/0    S+   02:03   0:00 -bash
+root          27  0.1  0.0      0     0 ?        S    02:01   0:00 [migration/1]
+root          33  0.1  0.0      0     0 ?        S    02:01   0:00 [migration/2]
+root          39  0.1  0.0      0     0 ?        S    02:01   0:00 [migration/3]
+root         685  0.1  0.0  28712 11744 ?        Ss   02:01   0:00 /usr/lib/systemd/systemd-journald
+dbus         794  0.1  0.0   7020  4800 ?        S    02:01   0:00 dbus-broker --log 4 --controller 9 --machine-id ec203a0183603f3afb7903c5e1afeb36 --max-bytes 536870912 --max-fds 4096 --max-matches 131072 --audit
+polkitd      838  0.1  0.1 2715300 25864 ?       Ssl  02:01   0:00 /usr/lib/polkit-1/polkitd --no-debug
+root         971  0.1  0.1 484896 30052 ?        Ssl  02:01   0:00 /usr/bin/python3 -Es /usr/sbin/tuned -l -P
+root        1135  0.1  0.0 173232  7648 ?        Ssl  02:01   0:00 /usr/sbin/rsyslogd -n
+root           2  0.0  0.0      0     0 ?        S    02:01   0:00 [kthreadd]

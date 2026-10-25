@@ -1,0 +1,18 @@
+
+ Performance counter stats for 'system wide':
+
+         120011.10 msec cpu-clock:HG                     #    4.000 CPUs utilized             
+             17437      context-switches:HG              #  145.295 /sec                      
+               165      cpu-migrations:HG                #    1.375 /sec                      
+               108      page-faults:HG                   #    0.900 /sec                      
+   <not supported>      cycles:HG                                                             
+   <not supported>      instructions:HG                                                       
+   <not supported>      branches:HG                                                           
+   <not supported>      branch-misses:HG                                                      
+   <not supported>      L1-dcache-loads:HG                                                    
+   <not supported>      L1-dcache-load-misses:HG                                              
+   <not supported>      LLC-loads:HG                                                          
+   <not supported>      LLC-load-misses:HG                                                    
+
+      30.003116657 seconds time elapsed
+

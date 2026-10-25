@@ -1,0 +1,571 @@
+Lab 18: SystemTap for Kernel Performance Analysis
+Objectives
+By the end of this lab, you will be able to:
+
+Install and configure SystemTap on a Linux system
+Write SystemTap scripts to trace I/O operations and system calls
+Monitor kernel events and analyze system performance bottlenecks
+Create custom probes for application and kernel debugging
+Interpret SystemTap output to identify performance issues and build a real-time monitoring dashboard
+Prerequisites
+Before starting this lab, you should have:
+
+Basic understanding of Linux system administration
+Familiarity with command-line interface and shell scripting
+Knowledge of system calls and kernel concepts
+Understanding of I/O operations and file systems
+Basic knowledge of performance monitoring concepts
+Install the required packages on a CentOS/RHEL 8 or 9 system with root access:
+
+# Install SystemTap and related packages
+sudo dnf install -y systemtap systemtap-runtime
+
+# Install kernel debugging symbols
+sudo dnf install -y kernel-debuginfo kernel-debuginfo-common-$(uname -m)
+
+# Install development tools required to build SystemTap kernel modules
+sudo dnf install -y kernel-devel gcc
+
+# Confirm the toolchain is ready
+stap --version
+Lab Environment
+Ready-to-Use Cloud Machines: Al Nafi provides Linux-based cloud machines for this lab. Simply click Start Lab to access your pre-configured environment. No need to build your own VM or install additional software.
+
+Your lab environment includes:
+
+CentOS/RHEL 8 or 9 system with root access
+SystemTap pre-installed with necessary kernel debugging symbols
+Sample applications for testing
+Performance monitoring tools
+Task 1: SystemTap Installation and Setup
+Step 1.1: Verify SystemTap Installation
+# Check if SystemTap is installed
+rpm -qa | grep systemtap
+
+# Check SystemTap version
+stap --version
+
+# Check if kernel debuginfo is available
+ls /usr/lib/debug/lib/modules/$(uname -r)/
+Step 1.2: Test Basic SystemTap Functionality
+cat > hello_systemtap.stp << 'EOF'
+#!/usr/bin/env stap
+
+probe begin {
+    println("Hello from SystemTap!")
+    println("Kernel version: ", kernel_v)
+    println("Current time: ", ctime(gettimeofday_s()))
+}
+
+probe end {
+    println("SystemTap script finished")
+}
+
+probe timer.s(5) {
+    println("Timer fired - SystemTap is monitoring")
+    exit()
+}
+EOF
+
+sudo stap hello_systemtap.stp
+Deliverable: Run the command above and capture the output showing "Hello from SystemTap!", the kernel version line, and the timer message before the script exits cleanly.
+
+Expected result: The script prints three lines of startup information, waits five seconds, prints the timer message, then terminates on its own with no error about missing debuginfo or failed probe compilation. If you see semantic error: missing x86 kernel/module debuginfo, revisit Step 1.1 and install the matching kernel-debuginfo package for your exact running kernel version (uname -r).
+
+Task 2: Tracing I/O Operations and System Calls
+Step 2.1: Basic I/O Monitoring Script
+cat > io_monitor.stp << 'EOF'
+#!/usr/bin/env stap
+
+global read_bytes, write_bytes, read_count, write_count
+global file_operations
+
+probe syscall.read {
+    if (target() == 0 || target() == pid()) {
+        read_count[execname()]++
+    }
+}
+
+probe syscall.read.return {
+    if (target() == 0 || target() == pid()) {
+        if ($return > 0) {
+            read_bytes[execname()] += $return
+        }
+    }
+}
+
+probe syscall.write {
+    if (target() == 0 || target() == pid()) {
+        write_count[execname()]++
+    }
+}
+
+probe syscall.write.return {
+    if (target() == 0 || target() == pid()) {
+        if ($return > 0) {
+            write_bytes[execname()] += $return
+        }
+    }
+}
+
+probe syscall.open {
+    if (target() == 0 || target() == pid()) {
+        file_operations[execname(), user_string($filename)]++
+        printf("OPEN: %s opened %s\n", execname(), user_string($filename))
+    }
+}
+
+probe timer.s(10) {
+    printf("\n=== I/O Statistics (10 second interval) ===\n")
+    printf("%-15s %10s %15s %10s %15s\n",
+           "PROCESS", "READS", "READ_BYTES", "WRITES", "WRITE_BYTES")
+
+    foreach ([proc] in read_count) {
+        printf("%-15s %10d %15d %10d %15d\n",
+               proc, read_count[proc], read_bytes[proc],
+               write_count[proc], write_bytes[proc])
+    }
+
+    printf("\n=== File Operations ===\n")
+    foreach ([proc, file] in file_operations) {
+        printf("%s: %s (%d times)\n", proc, file, file_operations[proc, file])
+    }
+
+    delete read_bytes
+    delete write_bytes
+    delete read_count
+    delete write_count
+    delete file_operations
+}
+
+probe end {
+    printf("\nI/O monitoring completed\n")
+}
+EOF
+
+chmod +x io_monitor.stp
+Step 2.2: I/O Latency Tracking Script
+cat > io_latency.stp << 'EOF'
+#!/usr/bin/env stap
+
+global io_start_time
+global read_latencies, write_latencies
+
+probe syscall.read {
+    if (target() == 0 || target() == pid()) {
+        io_start_time[tid(), "read"] = gettimeofday_us()
+    }
+}
+
+probe syscall.read.return {
+    if (target() == 0 || target() == pid()) {
+        start_time = io_start_time[tid(), "read"]
+        if (start_time) {
+            latency = gettimeofday_us() - start_time
+            read_latencies <<< latency
+            delete io_start_time[tid(), "read"]
+
+            if (latency > 1000) {
+                printf("SLOW READ: %s pid=%d latency=%d us bytes=%d\n",
+                       execname(), pid(), latency, $return)
+            }
+        }
+    }
+}
+
+probe syscall.write {
+    if (target() == 0 || target() == pid()) {
+        io_start_time[tid(), "write"] = gettimeofday_us()
+    }
+}
+
+probe syscall.write.return {
+    if (target() == 0 || target() == pid()) {
+        start_time = io_start_time[tid(), "write"]
+        if (start_time) {
+            latency = gettimeofday_us() - start_time
+            write_latencies <<< latency
+            delete io_start_time[tid(), "write"]
+
+            if (latency > 1000) {
+                printf("SLOW WRITE: %s pid=%d latency=%d us bytes=%d\n",
+                       execname(), pid(), latency, $return)
+            }
+        }
+    }
+}
+
+probe timer.s(15) {
+    printf("\n=== I/O Latency Statistics ===\n")
+    printf("Read Operations:\n")
+    if (@count(read_latencies) > 0) {
+        printf("  Count: %d\n", @count(read_latencies))
+        printf("  Average: %d us\n", @avg(read_latencies))
+        printf("  Min: %d us\n", @min(read_latencies))
+        printf("  Max: %d us\n", @max(read_latencies))
+        print(@hist_log(read_latencies))
+    }
+
+    printf("\nWrite Operations:\n")
+    if (@count(write_latencies) > 0) {
+        printf("  Count: %d\n", @count(write_latencies))
+        printf("  Average: %d us\n", @avg(write_latencies))
+        printf("  Min: %d us\n", @min(write_latencies))
+        printf("  Max: %d us\n", @max(write_latencies))
+        print(@hist_log(write_latencies))
+    }
+
+    delete read_latencies
+    delete write_latencies
+}
+
+probe end {
+    printf("\nI/O latency monitoring completed\n")
+}
+EOF
+
+chmod +x io_latency.stp
+Step 2.3: Test I/O Monitoring Scripts
+Run the monitor in one terminal:
+
+sudo stap io_monitor.stp
+In a second terminal, generate I/O activity:
+
+dd if=/dev/zero of=/tmp/testfile bs=1M count=100
+cp /tmp/testfile /tmp/testfile_copy
+find /usr -name "*.conf" -type f | head -20 | xargs cat > /tmp/config_dump
+rm /tmp/testfile /tmp/testfile_copy /tmp/config_dump
+Then stop io_monitor.stp with Ctrl+C and run the latency tracer:
+
+sudo stap io_latency.stp
+Deliverable: A captured 10-second reporting cycle from io_monitor.stp showing at least one process with non-zero READS/WRITES/READ_BYTES/WRITE_BYTES, plus at least one OPEN: line referencing a file under /tmp or /usr. From io_latency.stp, capture one reporting cycle showing average/min/max latency values for read or write operations.
+
+Expected result: The dd and cp commands appear in the statistics table with byte counts in the tens of megabytes, and the find/xargs cat pipeline generates multiple OPEN: lines for .conf files.
+
+Task 3: System Call Analysis and I/O Bottleneck Detection
+Step 3.1: Comprehensive System Call Tracer
+cat > syscall_tracer.stp << 'EOF'
+#!/usr/bin/env stap
+
+global syscall_count, syscall_time, syscall_errors
+global process_syscalls, start_times
+
+probe syscall.* {
+    if (target() == 0 || target() == pid()) {
+        syscall_count[name]++
+        process_syscalls[execname(), name]++
+        start_times[tid(), name] = gettimeofday_us()
+    }
+}
+
+probe syscall.*.return {
+    if (target() == 0 || target() == pid()) {
+        start_time = start_times[tid(), name]
+        if (start_time) {
+            duration = gettimeofday_us() - start_time
+            syscall_time[name] += duration
+            delete start_times[tid(), name]
+
+            if ($return < 0) {
+                syscall_errors[name]++
+                printf("ERROR: %s in %s (pid=%d) returned %d\n",
+                       name, execname(), pid(), $return)
+            }
+
+            if (duration > 10000) {
+                printf("SLOW SYSCALL: %s in %s took %d us\n",
+                       name, execname(), duration)
+            }
+        }
+    }
+}
+
+probe timer.s(20) {
+    printf("\n=== System Call Statistics ===\n")
+    printf("%-20s %10s %15s %10s %15s\n",
+           "SYSCALL", "COUNT", "TOTAL_TIME_US", "ERRORS", "AVG_TIME_US")
+
+    foreach (syscall in syscall_count- limit 20) {
+        avg_time = (syscall_count[syscall] > 0) ?
+                   syscall_time[syscall] / syscall_count[syscall] : 0
+        printf("%-20s %10d %15d %10d %15d\n",
+               syscall, syscall_count[syscall], syscall_time[syscall],
+               syscall_errors[syscall], avg_time)
+    }
+
+    printf("\n=== Top Processes by System Call Activity ===\n")
+    foreach ([proc, syscall] in process_syscalls- limit 15) {
+        printf("%s: %s (%d calls)\n", proc, syscall, process_syscalls[proc, syscall])
+    }
+
+    delete syscall_count
+    delete syscall_time
+    delete syscall_errors
+    delete process_syscalls
+}
+
+probe end {
+    printf("\nSystem call tracing completed\n")
+}
+EOF
+
+chmod +x syscall_tracer.stp
+Step 3.2: I/O Load Generator and Bottleneck Detector
+Create a load generator to produce measurable I/O pressure:
+
+cat > generate_io_load.sh << 'EOF'
+#!/bin/bash
+
+echo "Generating I/O load for testing..."
+
+for i in {1..5}; do
+    (
+        echo "Starting I/O worker $i"
+        dd if=/dev/urandom of=/tmp/iotest_$i bs=1M count=50 2>/dev/null
+
+        for j in {1..100}; do
+            dd if=/tmp/iotest_$i of=/dev/null bs=4k skip=$((RANDOM % 1000)) count=1 2>/dev/null
+            sleep 0.1
+        done
+
+        rm -f /tmp/iotest_$i
+    ) &
+done
+
+find /usr -type f -name "*.so" | head -50 | xargs -I {} cp {} /tmp/ 2>/dev/null
+
+wait
+
+echo "I/O load generation completed"
+EOF
+
+chmod +x generate_io_load.sh
+Create the bottleneck detector, which watches file-level read/write sizes and system call latency instead of relying on kernel tracepoints that vary between kernel builds:
+
+cat > io_bottleneck_detector.stp << 'EOF'
+#!/usr/bin/env stap
+
+global slow_syscalls, large_reads, large_writes
+global process_io_bytes, start_times
+
+probe syscall.read, syscall.write {
+    start_times[tid()] = gettimeofday_us()
+}
+
+probe syscall.read.return {
+    start_time = start_times[tid()]
+    if (start_time) {
+        duration = gettimeofday_us() - start_time
+        delete start_times[tid()]
+        if ($return > 0) {
+            process_io_bytes[execname(), "read"] += $return
+            if ($return > 1048576) {
+                large_reads[execname()]++
+                printf("LARGE READ: %s read %d bytes (latency %d us)\n",
+                       execname(), $return, duration)
+            }
+        }
+        if (duration > 50000) {
+            slow_syscalls["read"]++
+            printf("SLOW READ SYSCALL: %s latency %d us\n", execname(), duration)
+        }
+    }
+}
+
+probe syscall.write.return {
+    start_time = start_times[tid()]
+    if (start_time) {
+        duration = gettimeofday_us() - start_time
+        delete start_times[tid()]
+        if ($return > 0) {
+            process_io_bytes[execname(), "write"] += $return
+            if ($return > 1048576) {
+                large_writes[execname()]++
+                printf("LARGE WRITE: %s wrote %d bytes (latency %d us)\n",
+                       execname(), $return, duration)
+            }
+        }
+        if (duration > 50000) {
+            slow_syscalls["write"]++
+            printf("SLOW WRITE SYSCALL: %s latency %d us\n", execname(), duration)
+        }
+    }
+}
+
+probe timer.s(15) {
+    printf("\n=== I/O Bottleneck Analysis ===\n")
+    printf("Timestamp: %s\n", ctime(gettimeofday_s()))
+
+    printf("\nSlow Syscalls (>50ms):\n")
+    foreach (op in slow_syscalls) {
+        printf("  %s: %d slow operations\n", op, slow_syscalls[op])
+    }
+
+    printf("\nLarge Read/Write Counts (>1MB):\n")
+    foreach (proc in large_reads) {
+        printf("  %s: %d large reads\n", proc, large_reads[proc])
+    }
+    foreach (proc in large_writes) {
+        printf("  %s: %d large writes\n", proc, large_writes[proc])
+    }
+
+    printf("\nTotal Bytes by Process/Operation:\n")
+    foreach ([proc, op] in process_io_bytes- limit 10) {
+        printf("  %s %s: %d bytes\n", proc, op, process_io_bytes[proc, op])
+    }
+
+    delete slow_syscalls
+    delete large_reads
+    delete large_writes
+    delete process_io_bytes
+}
+
+probe end {
+    printf("\nI/O bottleneck detection completed\n")
+}
+EOF
+
+chmod +x io_bottleneck_detector.stp
+Run the detector while generating load:
+
+sudo stap io_bottleneck_detector.stp &
+STAP_PID=$!
+
+sleep 5
+./generate_io_load.sh
+sleep 20
+
+sudo kill $STAP_PID
+Deliverable: A saved terminal capture (or sudo stap io_bottleneck_detector.stp > bottleneck_report.txt & output file) that includes at least one LARGE WRITE: line from the dd workers and one non-empty "Total Bytes by Process/Operation" entry for dd.
+
+Expected result: Because each worker writes a 50 MB file with dd bs=1M count=50, you should see LARGE WRITE events attributed to dd, and the 15-second summary should show dd accumulating tens of megabytes under the write operation.
+
+Step 3.3: Real-Time Performance Dashboard
+Combine system call, CPU, and I/O signals into a single scrolling dashboard that refreshes on a fixed interval, giving a live, at-a-glance view suitable for troubleshooting during an incident.
+
+cat > performance_dashboard.stp << 'EOF'
+#!/usr/bin/env stap
+
+global syscall_count, process_cpu_samples
+global read_bytes, write_bytes
+global total_syscalls, total_errors
+
+probe syscall.* {
+    if (target() == 0 || target() == pid()) {
+        syscall_count[execname()]++
+        total_syscalls++
+    }
+}
+
+probe syscall.*.return {
+    if (target() == 0 || target() == pid()) {
+        if ($return < 0) {
+            total_errors++
+        }
+    }
+}
+
+probe syscall.read.return {
+    if (target() == 0 || target() == pid() && $return > 0) {
+        read_bytes[execname()] += $return
+    }
+}
+
+probe syscall.write.return {
+    if (target() == 0 || target() == pid() && $return > 0) {
+        write_bytes[execname()] += $return
+    }
+}
+
+probe timer.profile {
+    process_cpu_samples[execname()]++
+}
+
+function bar(value, scale) {
+    width = value / scale
+    if (width > 40) width = 40
+    result = ""
+    for (i = 0; i < width; i++) {
+        result = result . "#"
+    }
+    return result
+}
+
+probe timer.s(5) {
+    printf("\n========================================================\n")
+    printf(" SYSTEMTAP REAL-TIME PERFORMANCE DASHBOARD\n")
+    printf(" Time: %s\n", ctime(gettimeofday_s()))
+    printf("========================================================\n")
+
+    printf("\nTotal syscalls (5s window): %d   Errors: %d\n",
+           total_syscalls, total_errors)
+
+    printf("\n-- Top Processes by CPU Sample Count --\n")
+    foreach (proc in process_cpu_samples- limit 8) {
+        printf("  %-16s %5d  %s\n", proc, process_cpu_samples[proc],
+               bar(process_cpu_samples[proc], 2))
+    }
+
+    printf("\n-- Top Processes by Syscall Count --\n")
+    foreach (proc in syscall_count- limit 8) {
+        printf("  %-16s %5d  %s\n", proc, syscall_count[proc],
+               bar(syscall_count[proc], 5))
+    }
+
+    printf("\n-- Top Processes by Bytes Read --\n")
+    foreach (proc in read_bytes- limit 5) {
+        printf("  %-16s %10d bytes\n", proc, read_bytes[proc])
+    }
+
+    printf("\n-- Top Processes by Bytes Written --\n")
+    foreach (proc in write_bytes- limit 5) {
+        printf("  %-16s %10d bytes\n", proc, write_bytes[proc])
+    }
+
+    delete syscall_count
+    delete process_cpu_samples
+    delete read_bytes
+    delete write_bytes
+    total_syscalls = 0
+    total_errors = 0
+}
+
+probe end {
+    printf("\nDashboard stopped\n")
+}
+EOF
+
+chmod +x performance_dashboard.stp
+Run the dashboard while generating mixed load, so every panel has data to display:
+
+sudo stap performance_dashboard.stp &
+DASH_PID=$!
+
+sleep 3
+
+# Mixed load: CPU, memory, and I/O at the same time
+yes > /dev/null &
+CPU_PID=$!
+
+./generate_io_load.sh &
+IO_PID=$!
+
+sleep 25
+
+kill $CPU_PID 2>/dev/null
+wait $IO_PID 2>/dev/null
+
+sudo kill $DASH_PID
+Deliverable: At least one full dashboard refresh (printed every 5 seconds) captured to a file or terminal scrollback showing non-empty entries in all four panels: CPU sample counts, syscall counts, bytes read, and bytes written.
+
+Expected result: The "Top Processes by CPU Sample Count" panel shows yes near the top due to the tight CPU loop, while dd and the cp/find operations from generate_io_load.sh appear in the syscall count and bytes read/written panels. The bar charts scale visually with the counts, making it easy to spot the dominant process in each category at a glance.
+
+Expected Outcomes
+Working SystemTap scripts capable of tracing file I/O, system calls, and latency in real time on a live CentOS/RHEL system
+A reproducible method for generating synthetic I/O load and correlating it with SystemTap-reported bottlenecks
+A self-refreshing, multi-metric performance dashboard combining CPU, syscall, and I/O statistics into one view
+Troubleshooting
+If stap fails with errors referencing missing debuginfo or mismatched kernel versions, what does uname -r report versus what rpm -qa | grep kernel-debuginfo shows, and how would you reconcile the two?
+If a script compiles and runs but every counter stays at zero even while you generate load in another terminal, what does that suggest about the target() filter, the process you are generating load from, or whether the probe points you chose actually fire for the syscalls involved?
+Conclusion
+In this lab you installed and validated SystemTap on a live kernel, then built a progression of scripts that moved from simple system call counting to latency histograms, error tracking, synthetic load generation, and a combined real-time dashboard. Along the way you learned how to filter probes by process, aggregate statistics into global associative arrays, use SystemTap's built-in statistical aggregates such as @avg, @min, @max, and @hist_log, and reset counters on a timer to produce a rolling view of system behavior. You also practiced correlating a controlled I/O workload with the metrics your scripts reported, which is the same workflow used in production kernel-level troubleshooting. As a next step, explore SystemTap's tapset library to reuse higher-level abstractions instead of raw probes, experiment with stap -x <pid> to scope monitoring to a single running process, and compare your findings against perf or bpftrace to understand the tradeoffs between the different Linux tracing frameworks.
